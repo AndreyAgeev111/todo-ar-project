@@ -7,7 +7,6 @@ import sttp.tapir.Schema
 
 @endpointInput("/signup")
 case class User(login: String,
-                password: String,
                 firstName: Option[String],
                 secondName: Option[String],
                 email: Option[String])

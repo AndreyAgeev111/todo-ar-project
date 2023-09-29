@@ -26,7 +26,7 @@ trait PublicController {
     .in(jsonBody[User])
     .out(jsonBody[String])
 
-  private val userSignUpServerEndpoint: ServerEndpoint[Any, IO] = userSignUp.serverLogicSuccess(user => IO.pure(s"Successfully signup with login=${user.login} and password=${user.password}"))
+  private val userSignUpServerEndpoint: ServerEndpoint[Any, IO] = userSignUp.serverLogicSuccess(user => IO.pure(s"Successfully signup with login=${user.login}"))
 
   val publicApiEndpoints: List[ServerEndpoint[Any, IO]] = List(userTasksAddServerEndpoint, userSignUpServerEndpoint)
 }

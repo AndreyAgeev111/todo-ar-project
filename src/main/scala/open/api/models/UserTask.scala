@@ -6,17 +6,18 @@ import open.api.models.TaskStatuses.TaskStatus
 import sttp.tapir.EndpointIO.annotations.endpointInput
 import sttp.tapir.Schema
 
-import java.time.Instant
+import java.time.LocalDateTime
 
 @endpointInput("/task")
-case class UserTask(name: String,
-                    description: String,
-                    createdAt: Instant,
-                    deadline: Instant,
+case class UserTask(id: String,
+                    name: String,
+                    description: Option[String],
+                    createdAt: LocalDateTime,
+                    deadline: LocalDateTime,
                     status: TaskStatus)
 
 object UserTask {
   implicit val userTaskZioEncoder: Encoder[UserTask] = deriveEncoder[UserTask]
   implicit val userTaskZioDecoder: Decoder[UserTask] = deriveDecoder[UserTask]
-  implicit val userSchema: Schema[UserTask] = Schema.derived
+  implicit val userTaskSchema: Schema[UserTask] = Schema.derived
 }

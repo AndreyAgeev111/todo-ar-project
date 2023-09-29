@@ -4,5 +4,5 @@ object DependenciesVersion {
   final val logbackVersion = "1.4.11"
   final val scalaTestVersion = "3.2.17"
   final val circeVersion = "3.9.0"
-  final val doobieVersion = "1.0.0-RC4"
+  final val doobieVersion = "1.0.0-RC1"
 }
