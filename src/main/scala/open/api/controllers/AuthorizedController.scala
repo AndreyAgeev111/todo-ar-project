@@ -2,18 +2,13 @@ package open.api.controllers
 
 import cats.effect.IO
 import open.api.controllers.AuthorizedController.TAG
-import open.api.models.{TaskStatuses, UserTask}
-import open.api.persistent.dao.UserTaskDaoImpl
+import open.api.models.UserTask
 import open.api.persistent.repository.UserTaskRepositoryImpl
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.{PublicEndpoint, endpoint, query}
 
-import java.time.Instant
-
-trait AuthorizedController {
-  private val userTaskRepository = new UserTaskRepositoryImpl(new UserTaskDaoImpl)
-
+class AuthorizedController(userTaskRepository: UserTaskRepositoryImpl) {
   private val userTasksAdd: PublicEndpoint[UserTask, Unit, String, Any] = endpoint
     .post
     .description("Add one user task")
@@ -38,7 +33,7 @@ trait AuthorizedController {
   // POST updatePassword
   // POST updateStatus
   // GET filterTasks
-  val authorizedApiEndpoints: List[ServerEndpoint[Any, IO]] = List(userTasksAddServerEndpoint, getUserTasksServerEndpoint)
+  def authorizedApiEndpoints: List[ServerEndpoint[Any, IO]] = List(userTasksAddServerEndpoint, getUserTasksServerEndpoint)
 }
 
 object AuthorizedController {

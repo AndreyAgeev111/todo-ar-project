@@ -6,14 +6,14 @@ import open.api.models.TaskStatuses.TaskStatus
 import sttp.tapir.EndpointIO.annotations.endpointInput
 import sttp.tapir.Schema
 
-import java.time.LocalDateTime
+import java.time.Instant
 
 @endpointInput("/task")
 case class UserTask(id: String,
                     name: String,
                     description: Option[String],
-                    createdAt: LocalDateTime,
-                    deadline: LocalDateTime,
+                    createdAt: Instant,
+                    deadline: Instant,
                     status: TaskStatus)
 
 object UserTask {

@@ -28,5 +28,10 @@ object Dependencies {
     "org.tpolecat" %% "doobie-specs2" % doobieVersion % Test,
     "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test
   )
-  final val allProjectDependencies: Seq[ModuleID] = tapirDependencies ++ http4sDependencies ++ logbackDependencies ++ scalaTestDependencies ++ circeDependencies ++ doobieDependencies
+  private val wireDependencies: Seq[ModuleID] = Seq(
+    "com.softwaremill.macwire" %% "macros" % wireVersion % Provided,
+    "com.softwaremill.macwire" %% "util" % wireVersion,
+    "com.softwaremill.macwire" %% "proxy" % wireVersion
+  )
+  final val allProjectDependencies: Seq[ModuleID] = tapirDependencies ++ http4sDependencies ++ logbackDependencies ++ scalaTestDependencies ++ circeDependencies ++ doobieDependencies ++ wireDependencies
 }

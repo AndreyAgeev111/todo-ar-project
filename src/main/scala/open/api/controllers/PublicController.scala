@@ -7,7 +7,7 @@ import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.{Endpoint, endpoint}
 
-trait PublicController {
+class PublicController {
   private val userLogin: Endpoint[Unit, UserLoginForm, Unit, String, Any] = endpoint
     .post
     .description("Login with credentials")
