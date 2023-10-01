@@ -1,22 +1,25 @@
 package open.api.controllers
 
-import cats.effect.IO
 import open.api.controllers.AuthorizedController.TAG
 import open.api.models.UserTask
-import open.api.persistent.repository.UserTaskRepositoryImpl
+import open.api.persistent.repository.UserTaskRepository
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.{PublicEndpoint, endpoint, query}
 
-class AuthorizedController(userTaskRepository: UserTaskRepositoryImpl) {
-  private val userTasksAdd: PublicEndpoint[UserTask, Unit, String, Any] = endpoint
+
+class AuthorizedController[F[_]](userTaskRepository: UserTaskRepository[F]) {
+  private val userTasksAdd: PublicEndpoint[(String, UserTask), Unit, String, Any] = endpoint
     .post
     .description("Add one user task")
     .tag(TAG)
     .in("tasks")
+    .in(query[String]("login"))
     .in(jsonBody[UserTask])
     .out(jsonBody[String])
-  private val userTasksAddServerEndpoint: ServerEndpoint[Any, IO] = userTasksAdd.serverLogicSuccess(userTask => IO.pure(s"Your task is ${userTask.name}"))
+  private val userTasksAddServerEndpoint: ServerEndpoint[Any, F] = userTasksAdd.serverLogicSuccess{
+    case (userLogin, userTask) => userTaskRepository.addUserTask(userTask, userLogin)
+  }
 
   private val getUserTasks: PublicEndpoint[String, Unit, List[UserTask], Any] = endpoint
     .get
@@ -25,7 +28,7 @@ class AuthorizedController(userTaskRepository: UserTaskRepositoryImpl) {
     .in("tasks")
     .in(query[String]("login"))
     .out(jsonBody[List[UserTask]])
-  private val getUserTasksServerEndpoint: ServerEndpoint[Any, IO] = getUserTasks.serverLogicSuccess(login => userTaskRepository.listUserTasks(login))
+  private val getUserTasksServerEndpoint: ServerEndpoint[Any, F] = getUserTasks.serverLogicSuccess(login => userTaskRepository.listUserTasks(login))
 
   // TODO
   // POST updateTask
@@ -33,7 +36,7 @@ class AuthorizedController(userTaskRepository: UserTaskRepositoryImpl) {
   // POST updatePassword
   // POST updateStatus
   // GET filterTasks
-  def authorizedApiEndpoints: List[ServerEndpoint[Any, IO]] = List(userTasksAddServerEndpoint, getUserTasksServerEndpoint)
+  def authorizedApiEndpoints: List[ServerEndpoint[Any, F]] = List(userTasksAddServerEndpoint, getUserTasksServerEndpoint)
 }
 
 object AuthorizedController {

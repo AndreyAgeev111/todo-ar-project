@@ -26,8 +26,8 @@ CREATE TABLE user_tasks (
                             user_login text NOT NULL,
                             name text NOT NULL ,
                             description text NULL,
-                            created_at timestamp NOT NULL,
-                            deadline timestamp NOT NULL,
+                            created_at timestamp with time zone NOT NULL,
+                            deadline timestamp with time zone NOT NULL,
                             status text NOT NULL
 );
 

@@ -16,5 +16,5 @@ object TaskStatuses extends Enumeration {
   implicit val taskStatusEncoder: Encoder[TaskStatus] = Encoder.encodeEnumeration(TaskStatuses)
   implicit val taskStatusDecoder: Decoder[TaskStatus] = Decoder.decodeEnumeration(TaskStatuses)
   implicit val taskStatusSchema: Schema[TaskStatuses.TaskStatus] = Schema.derivedEnumerationValue
-  implicit val taskStatusMeta: Meta[TaskStatuses.Value] = pgEnum(TaskStatuses, "status")
+  implicit val taskStatusMeta: Meta[TaskStatus] = pgEnum(TaskStatuses, "status")
 }

@@ -25,6 +25,7 @@ object Dependencies {
     "org.tpolecat" %% "doobie-h2" % doobieVersion,
     "org.tpolecat" %% "doobie-hikari" % doobieVersion,
     "org.tpolecat" %% "doobie-postgres" % doobieVersion,
+    "org.tpolecat" %% "doobie-postgres-circe" % doobieVersion,
     "org.tpolecat" %% "doobie-specs2" % doobieVersion % Test,
     "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test
   )

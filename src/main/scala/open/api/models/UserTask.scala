@@ -1,7 +1,7 @@
 package open.api.models
 
 import io.circe.{Decoder, Encoder}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.generic.semiauto._
 import open.api.models.TaskStatuses.TaskStatus
 import sttp.tapir.EndpointIO.annotations.endpointInput
 import sttp.tapir.Schema
