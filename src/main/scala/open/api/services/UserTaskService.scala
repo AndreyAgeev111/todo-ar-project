@@ -18,7 +18,7 @@ class UserTaskServiceImpl(userTaskRepository: UserTaskRepository[IO]) extends Us
     userTaskRepository.addUserTask(userTask, userLogin)
       .map(taskAdded => Right(StatusCode.Ok -> UserTaskCreateResponse(taskAdded)))
       .recover {
-        case e: PSQLException => Left(StatusCode.BadRequest -> ErrorResponse(s"Invalid request data with error = $e"))
+        case e: PSQLException if e.getMessage.contains(s"(user_login)=($userLogin)")=> Left(StatusCode.BadRequest -> ErrorResponse(s"Invalid request - user with login = $userLogin is unknown"))
       }
 
   override def listUserTasks(userLogin: String): IO[Either[(StatusCode, ErrorResponse), (StatusCode, List[UserTaskResponse])]] =
