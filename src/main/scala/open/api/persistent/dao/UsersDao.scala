@@ -9,7 +9,6 @@ import open.api.persistent.dto.{UserDto, UserLoginCredentialsDto}
 trait UsersDao {
   def addUserCredentials(user: UserLoginCredentialsDto): Update0
   def addUserInfo(fullUser: UserDto): Update0
-
   def findUserPassword(userLogin: String): Query0[String]
 }
 

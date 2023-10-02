@@ -1,10 +1,11 @@
 package open.api.persistent.dto
 
 import open.api.models.TaskStatuses.TaskStatus
-import open.api.models.requests.UserTaskRequest
+import open.api.models.requests.UserTaskCreateRequest
 import open.api.models.responses.UserTaskResponse
 
 import java.time.Instant
+import scala.math.random
 
 case class UserTaskDto(id: String,
                        userLogin: String,
@@ -15,7 +16,7 @@ case class UserTaskDto(id: String,
                        status: TaskStatus)
 
 object UserTaskDto {
-  def apply(userTask: UserTaskRequest, userLogin: String): UserTaskDto =
+  def apply(userTask: UserTaskCreateRequest, userLogin: String): UserTaskDto =
     UserTaskDto(
       id = generateId(userTask, userLogin),
       userLogin = userLogin, 
@@ -36,6 +37,6 @@ object UserTaskDto {
       status = dto.status
     )
 
-  private def generateId(userTask: UserTaskRequest, userLogin: String): String =
-    s"TASK-${userLogin}-${userTask.name.hashCode}"
+  private def generateId(userTask: UserTaskCreateRequest, userLogin: String): String =
+    s"TASK-${userLogin}-${userTask.name.hashCode}-${(random() * 500000 + random() * 1000000).toInt}"
 }

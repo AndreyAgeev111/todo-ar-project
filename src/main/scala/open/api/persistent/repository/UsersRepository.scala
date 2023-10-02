@@ -9,7 +9,6 @@ import open.api.persistent.util.Connection.xa
 
 trait UsersRepository[F[_]] {
   def registerUser(user: UserRegisterRequest): F[Unit]
-
   def findUserPassword(userLogin: String): F[Option[String]]
 }
 
