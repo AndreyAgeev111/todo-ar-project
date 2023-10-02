@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  app:
+    build: target/docker/stage/
+    image: todo-ar-project:1.0.0
+    depends_on:
+      - db
+    ports:
+      - "9000:9000"
+    networks:
+      - default
+  db:
+    image: postgres:15
+    restart: always
+    volumes:
+      - ".db/sql:/docker-entrypoint-initdb.d"
+    environment:
+      - "POSTGRES_USER=ar"
+      - "POSTGRES_PASSWORD=ar-todo"
+    ports:
+      - "5432:5432"
+
+volumes:
+  db:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

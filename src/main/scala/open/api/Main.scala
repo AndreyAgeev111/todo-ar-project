@@ -17,7 +17,7 @@ object Main extends IOApp {
       .get("HTTP_PORT")
       .flatMap(_.toIntOption)
       .flatMap(Port.fromInt)
-      .getOrElse(port"8080")
+      .getOrElse(port"9000")
 
     EmberServerBuilder
       .default[IO]
@@ -25,12 +25,7 @@ object Main extends IOApp {
       .withPort(port)
       .withHttpApp(Router("/" -> routes).orNotFound)
       .build
-      .use { server =>
-        for {
-          _ <- IO.println(s"Go to http://localhost:${server.address.getPort}/docs to open SwaggerUI. Press ENTER key to exit.")
-          _ <- IO.readLine
-        } yield ()
-      }
+      .useForever
       .as(ExitCode.Success)
   }
 }
