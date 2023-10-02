@@ -9,7 +9,7 @@ import sttp.model.StatusCode
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.model.UsernamePassword
 import sttp.tapir.server.{PartialServerEndpoint, ServerEndpoint}
-import sttp.tapir.{Endpoint, PublicEndpoint, auth, endpoint, query, statusCode}
+import sttp.tapir.{auth, endpoint, query, statusCode}
 
 
 class AuthorizedController[F[_]](userTaskService: UserTaskService[F],
@@ -32,9 +32,10 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F],
     .out(statusCode)
     .out(jsonBody[UserTaskCreateResponse])
 
-  private val userTasksAddServerEndpoint: ServerEndpoint[Any, F] = userTasksAdd.serverLogic { _ => {
+  private val userTasksAddServerEndpoint: ServerEndpoint[Any, F] = userTasksAdd.serverLogic {
+    _ => {
     case (userLogin, task) => userTaskService.addUserTask(task, userLogin)
-  }
+    }
   }
 
   private val getUserTasks: PartialServerEndpoint[UsernamePassword, (StatusCode, UserLoginCredentialsResponse), Unit, (StatusCode, ErrorResponse), (StatusCode, List[UserTaskResponse]), Any, F] = securityEndpoint

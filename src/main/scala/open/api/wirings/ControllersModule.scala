@@ -5,8 +5,7 @@ import open.api.controllers.{AuthorizedController, PublicController}
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
-class ControllersModule(authorizedController: AuthorizedController[IO],
-                        publicController: PublicController[IO]) {
+class ControllersModule(authorizedController: AuthorizedController[IO], publicController: PublicController[IO]) {
   private val apiEndpoints = authorizedController.authorizedApiEndpoints ++ publicController.publicApiEndpoints
 
   private val docEndpoints: List[ServerEndpoint[Any, IO]] = SwaggerInterpreter()
