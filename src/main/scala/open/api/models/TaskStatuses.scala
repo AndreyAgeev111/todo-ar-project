@@ -9,12 +9,10 @@ import sttp.tapir.Schema
 object TaskStatuses extends Enumeration {
   type TaskStatus = Value
 
-  val ToDo: TaskStatus = Value("To be done")
-  val InProgress: TaskStatus = Value("In progress")
-  val Done: TaskStatus = Value("Done")
+  val ToDo, InProgress, Done: TaskStatus = Value
 
   implicit val taskStatusEncoder: Encoder[TaskStatus] = Encoder.encodeEnumeration(TaskStatuses)
   implicit val taskStatusDecoder: Decoder[TaskStatus] = Decoder.decodeEnumeration(TaskStatuses)
   implicit val taskStatusSchema: Schema[TaskStatuses.TaskStatus] = Schema.derivedEnumerationValue
-  implicit val taskStatusMeta: Meta[TaskStatus] = pgEnum(TaskStatuses, "status")
+  implicit val taskStatusMeta: Meta[TaskStatuses.Value] = pgEnum(TaskStatuses, "task_status")
 }

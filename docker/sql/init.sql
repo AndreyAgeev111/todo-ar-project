@@ -20,6 +20,8 @@ ALTER TABLE users
     ADD FOREIGN KEY (user_login) REFERENCES users_credentials (login) ;
 
 -- User's tasks
+CREATE TYPE task_status AS ENUM ('ToDo', 'InProgress', 'Done');
+
 CREATE TABLE user_tasks (
                             id text NOT NULL,
                             PRIMARY KEY (id),
@@ -28,7 +30,7 @@ CREATE TABLE user_tasks (
                             description text NULL,
                             created_at timestamp with time zone NOT NULL,
                             deadline timestamp with time zone NOT NULL,
-                            status text NOT NULL
+                            status task_status NOT NULL
 );
 
 ALTER TABLE user_tasks
