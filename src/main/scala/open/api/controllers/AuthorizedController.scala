@@ -45,7 +45,9 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F],
     .out(statusCode)
     .out(jsonBody[List[UserTaskResponse]])
 
-  private val getUserTasksServerEndpoint: ServerEndpoint[Any, F] = getUserTasks.serverLogic(user => _ => userTaskService.listUserTasks(user._2.login))
+  private val getUserTasksServerEndpoint: ServerEndpoint[Any, F] = getUserTasks.serverLogic {
+    case (_, user) => _ => userTaskService.listUserTasks(user.login)
+  }
 
   // TODO
   // POST updateTask
