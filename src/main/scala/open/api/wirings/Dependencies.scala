@@ -5,6 +5,7 @@ import com.softwaremill.macwire.wire
 import open.api.controllers.{AuthorizedController, PublicController}
 import open.api.persistent.dao.{UserTaskDao, UserTaskDaoImpl, UsersDao, UsersDaoImpl}
 import open.api.persistent.repository.{UserTaskRepositoryImpl, UsersRepositoryImpl}
+import open.api.services.UsersServiceImpl
 
 object Dependencies {
 
@@ -13,6 +14,8 @@ object Dependencies {
 
   private lazy val usersRepository: UsersRepositoryImpl = wire[UsersRepositoryImpl]
   private lazy val userTaskRepository: UserTaskRepositoryImpl = wire[UserTaskRepositoryImpl]
+
+  private lazy val usersService: UsersServiceImpl = wire[UsersServiceImpl]
 
   private lazy val authorizedController: AuthorizedController[IO] = wire[AuthorizedController[IO]]
   private lazy val publicController: PublicController[IO] = wire[PublicController[IO]]

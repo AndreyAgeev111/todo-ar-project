@@ -9,6 +9,8 @@ import open.api.persistent.util.Connection.xa
 
 trait UsersRepository[F[_]] {
   def registerUser(user: UserRegisterRequest): F[Unit]
+
+  def findUserPassword(userLogin: String): F[Option[String]]
 }
 
 class UsersRepositoryImpl(usersDao: UsersDao) extends UsersRepository[IO] {
@@ -19,4 +21,6 @@ class UsersRepositoryImpl(usersDao: UsersDao) extends UsersRepository[IO] {
     } yield ()
   }
 
+  override def findUserPassword(userLogin: String): IO[Option[String]] =
+    usersDao.findUserPassword(userLogin).option.transact(xa)
 }

@@ -9,7 +9,7 @@ import sttp.tapir.Schema
 case class UserLoginCredentialsRequest(login: String,
                                        password: String)
 
-object UserLoginCredentials {
+object UserLoginCredentialsRequest {
   implicit val userLoginFormEncoder: Encoder[UserLoginCredentialsRequest] = deriveEncoder[UserLoginCredentialsRequest]
   implicit val userLoginFormDecoder: Decoder[UserLoginCredentialsRequest] = deriveDecoder[UserLoginCredentialsRequest]
   implicit val userLoginFormSchema: Schema[UserLoginCredentialsRequest] = Schema.derived
