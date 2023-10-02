@@ -7,9 +7,7 @@ services:
     depends_on:
       - db
     ports:
-      - "9000:9000"
-    networks:
-      - default
+      - "8080:8080"
   db:
     image: postgres:15
     restart: always
@@ -18,13 +16,10 @@ services:
     environment:
       - "POSTGRES_USER=ar"
       - "POSTGRES_PASSWORD=ar-todo"
+      - "POSTGRES_DB=ar-project"
     ports:
       - "5432:5432"
 
 volumes:
   db:
     driver: local
-
-networks:
-  default:
-    driver: bridge

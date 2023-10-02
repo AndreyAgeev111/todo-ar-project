@@ -17,7 +17,7 @@ object Main extends IOApp {
       .get("HTTP_PORT")
       .flatMap(_.toIntOption)
       .flatMap(Port.fromInt)
-      .getOrElse(port"9000")
+      .getOrElse(port"8080")
 
     EmberServerBuilder
       .default[IO]
