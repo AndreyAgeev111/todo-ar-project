@@ -3,7 +3,7 @@ package open.api.models.requests
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 import sttp.tapir.EndpointIO.annotations.endpointInput
-import sttp.tapir.Schema
+import sttp.tapir.{Codec, Schema}
 
 @endpointInput("/login")
 case class UserLoginCredentialsRequest(login: String,

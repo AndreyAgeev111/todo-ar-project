@@ -1,5 +1,6 @@
 package open.api.controllers
 
+import cats.implicits.catsSyntaxOptionId
 import open.api.controllers.PublicController.TAG
 import open.api.errors.ErrorResponse
 import open.api.models.requests.{UserLoginCredentialsRequest, UserRegisterRequest}
@@ -23,7 +24,7 @@ class PublicController[F[_]](usersService: UsersService[F]) {
     .out(statusCode)
     .out(jsonBody[UserLoginCredentialsResponse])
 
-  private val userLoginServerEndpoint: ServerEndpoint[Any, F] = userLogin.serverLogic(userLoginCredentials => usersService.checkUserPassword(userLoginCredentials.login, userLoginCredentials.password))
+  private val userLoginServerEndpoint: ServerEndpoint[Any, F] = userLogin.serverLogic(userLoginCredentials => usersService.checkUserPassword(userLoginCredentials.login, userLoginCredentials.password.some))
 
   private val userSignUp: Endpoint[Unit, UserRegisterRequest, (StatusCode, ErrorResponse), (StatusCode, UserRegisterResponse), Any] = endpoint
     .post

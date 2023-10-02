@@ -9,17 +9,21 @@ import org.postgresql.util.PSQLException
 import sttp.model.StatusCode
 
 trait UsersService[F[_]] {
-  def checkUserPassword(userLogin: String, pass: String): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserLoginCredentialsResponse)]]
+  def checkUserPassword(userLogin: String, pass: Option[String]): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserLoginCredentialsResponse)]]
   def createUser(user: UserRegisterRequest): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserRegisterResponse)]]
 }
 
 class UsersServiceImpl(usersRepository: UsersRepositoryImpl) extends UsersService[IO] {
-  override def checkUserPassword(userLogin: String, pass: String): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserLoginCredentialsResponse)]] =
-    usersRepository.findUserPassword(userLogin).map {
-      case Some(truePass) if truePass == pass => Right(StatusCode.Ok -> UserLoginCredentialsResponse(true))
-      case Some(_) => Left(StatusCode.BadRequest -> ErrorResponse("Invalid login credentials"))
-      case None => Left(StatusCode.BadRequest -> ErrorResponse("Password was not found"))
+  override def checkUserPassword(userLogin: String, password: Option[String]): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserLoginCredentialsResponse)]] = {
+    password match {
+      case Some(pass) => usersRepository.findUserPassword(userLogin).map {
+        case Some(truePass) if truePass == pass => Right(StatusCode.Ok -> UserLoginCredentialsResponse(result = true, login = userLogin))
+        case Some(_) => Left(StatusCode.BadRequest -> ErrorResponse("Invalid login credentials"))
+        case None => Left(StatusCode.BadRequest -> ErrorResponse("Password was not found"))
+      }
+      case None => IO.pure(Left(StatusCode.BadRequest -> ErrorResponse("Invalid login credentials")))
     }
+  }
 
   override def createUser(user: UserRegisterRequest): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserRegisterResponse)]] =
     usersRepository.registerUser(user)
