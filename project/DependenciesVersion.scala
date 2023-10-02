@@ -6,4 +6,5 @@ object DependenciesVersion {
   final val circeVersion = "3.9.0"
   final val doobieVersion = "1.0.0-RC1"
   final val wireVersion = "2.5.8"
+  final val configVersion = "0.17.4"
 }

@@ -34,5 +34,8 @@ object Dependencies {
     "com.softwaremill.macwire" %% "util" % wireVersion,
     "com.softwaremill.macwire" %% "proxy" % wireVersion
   )
-  final val allProjectDependencies: Seq[ModuleID] = tapirDependencies ++ http4sDependencies ++ logbackDependencies ++ scalaTestDependencies ++ circeDependencies ++ doobieDependencies ++ wireDependencies
+  private val configDependencies: Seq[ModuleID] = Seq(
+    "com.github.pureconfig" %% "pureconfig" % configVersion
+  )
+  final val allProjectDependencies: Seq[ModuleID] = tapirDependencies ++ http4sDependencies ++ logbackDependencies ++ scalaTestDependencies ++ circeDependencies ++ doobieDependencies ++ wireDependencies ++ configDependencies
 }

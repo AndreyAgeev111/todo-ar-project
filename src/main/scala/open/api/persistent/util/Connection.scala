@@ -2,16 +2,17 @@ package open.api.persistent.util
 
 import cats.effect.IO
 import doobie.util.transactor.Transactor
+import open.api.persistent.configuration.DBConfiguration
+import pureconfig.ConfigSource
+import pureconfig.generic.auto._
 
 object Connection {
-  private val dbDriver = "org.postgresql.Driver"
-  private val dbUrl = "jdbc:postgresql://localhost:5432/ar-project"
-  private val dbUser = "postgres"
-  private val dbPass = "andrey"
-
-  val xa: Transactor[IO] = Transactor.fromDriverManager[IO](
-      driver = dbDriver,
-      url = dbUrl,
-      user = dbUser,
-      pass = dbPass)
+  val xa: Transactor[IO] = ConfigSource.default.at("db").load[DBConfiguration] match {
+    case Right(dbConfig) => Transactor.fromDriverManager[IO](
+      driver = dbConfig.driver,
+      url = dbConfig.url,
+      user = dbConfig.user,
+      pass = dbConfig.password
+    )
+  }
 }
