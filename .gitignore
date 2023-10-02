@@ -1,5 +1,6 @@
 # common IDEs to be ignored
 .idea/
+.bsp/
 .metals/
 .vscode/
 
