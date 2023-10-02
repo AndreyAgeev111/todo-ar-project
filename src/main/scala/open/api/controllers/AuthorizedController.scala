@@ -22,20 +22,17 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F],
       user => usersService.checkUserPassword(user.username, user.password)
     }
 
-  private val userTasksAdd: PartialServerEndpoint[UsernamePassword, (StatusCode, UserLoginCredentialsResponse), (String, UserTaskCreateRequest), (StatusCode, ErrorResponse), (StatusCode, UserTaskCreateResponse), Any, F] = securityEndpoint
+  private val userTasksAdd: PartialServerEndpoint[UsernamePassword, (StatusCode, UserLoginCredentialsResponse), UserTaskCreateRequest, (StatusCode, ErrorResponse), (StatusCode, UserTaskCreateResponse), Any, F] = securityEndpoint
     .post
     .description("Add one user task")
     .tag(TAG)
     .in("tasks")
-    .in(query[String]("login"))
     .in(jsonBody[UserTaskCreateRequest])
     .out(statusCode)
     .out(jsonBody[UserTaskCreateResponse])
 
   private val userTasksAddServerEndpoint: ServerEndpoint[Any, F] = userTasksAdd.serverLogic {
-    _ => {
-    case (userLogin, task) => userTaskService.addUserTask(task, userLogin)
-    }
+    case (_, user) => task => userTaskService.addUserTask(task, user.login)
   }
 
   private val getUserTasks: PartialServerEndpoint[UsernamePassword, (StatusCode, UserLoginCredentialsResponse), Unit, (StatusCode, ErrorResponse), (StatusCode, List[UserTaskResponse]), Any, F] = securityEndpoint
