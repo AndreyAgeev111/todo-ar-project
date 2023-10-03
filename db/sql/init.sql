@@ -1,14 +1,14 @@
 CREATE DATABASE ar-project;
 
 -- Users credentials
-CREATE TABLE users_credentials (
+CREATE TABLE IF NOT EXISTS users_credentials (
                            login text NOT NULL,
                            PRIMARY KEY (login),
                            pass text NOT NULL
 );
 
 -- Users
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
                         user_login text NOT NULL,
                         PRIMARY KEY (user_login),
                         first_name text NULL,
@@ -16,13 +16,13 @@ CREATE TABLE users (
                         email text NULL
 );
 
-ALTER TABLE users
+ALTER TABLE IF EXISTS users
     ADD FOREIGN KEY (user_login) REFERENCES users_credentials (login) ;
 
 -- User's tasks
-CREATE TYPE task_status AS ENUM ('ToDo', 'InProgress', 'Done');
+CREATE TYPE IF NOT EXISTS task_status AS ENUM ('ToDo', 'InProgress', 'Done');
 
-CREATE TABLE user_tasks (
+CREATE TABLE IF NOT EXISTS user_tasks (
                             id text NOT NULL,
                             PRIMARY KEY (id),
                             user_login text NOT NULL,
@@ -33,5 +33,5 @@ CREATE TABLE user_tasks (
                             status task_status NOT NULL
 );
 
-ALTER TABLE user_tasks
+ALTER TABLE IF EXISTS user_tasks
     ADD FOREIGN KEY (user_login) REFERENCES users_credentials (login);
