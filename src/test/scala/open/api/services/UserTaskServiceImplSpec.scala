@@ -48,7 +48,7 @@ class UserTaskServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matche
     }
     "not create user, if it is existing" in {
       when(mockUserTaskRepository.addUserTask(addTaskRequest, login))
-        .thenReturn(IO.raiseError(new PSQLException(s"(user_login)=($login)", any)))
+        .thenReturn(IO.raiseError(new PSQLException(s"(user_login)=($login)", any, any)))
 
       userTaskService
         .addUserTask(addTaskRequest, login)
