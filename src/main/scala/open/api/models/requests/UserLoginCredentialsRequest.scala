@@ -6,8 +6,7 @@ import sttp.tapir.EndpointIO.annotations.endpointInput
 import sttp.tapir.{Codec, Schema}
 
 @endpointInput("/login")
-case class UserLoginCredentialsRequest(login: String,
-                                       password: String)
+case class UserLoginCredentialsRequest(login: String, password: String)
 
 object UserLoginCredentialsRequest {
   implicit val userLoginFormEncoder: Encoder[UserLoginCredentialsRequest] = deriveEncoder[UserLoginCredentialsRequest]

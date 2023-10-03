@@ -8,7 +8,6 @@ import open.api.models.responses.UserTaskResponse
 import open.api.persistent.dto.UserTaskDto
 import open.api.persistent.util.Connection.xa
 
-
 trait UserTaskRepository[F[_]] {
   def listUserTasks(userLogin: String): F[List[UserTaskDto]]
   def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): F[Unit]

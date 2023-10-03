@@ -2,10 +2,7 @@ package open.api.persistent.dto
 
 import open.api.models.requests.UserRegisterRequest
 
-case class UserDto(login: String,
-                   firstName: Option[String],
-                   secondName: Option[String],
-                   email: Option[String])
+case class UserDto(login: String, firstName: Option[String], secondName: Option[String], email: Option[String])
 
 object UserDto {
   def fromRegisterRequest(user: UserRegisterRequest): UserDto =

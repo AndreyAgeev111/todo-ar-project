@@ -8,11 +8,12 @@ import pureconfig.generic.auto._
 
 object Connection {
   val xa: Transactor[IO] = ConfigSource.default.at("db").load[DBConfiguration] match {
-    case Right(dbConfig) => Transactor.fromDriverManager[IO](
-      driver = dbConfig.driver,
-      url = dbConfig.url,
-      user = dbConfig.user,
-      pass = dbConfig.password
-    )
+    case Right(dbConfig) =>
+      Transactor.fromDriverManager[IO](
+        driver = dbConfig.driver,
+        url = dbConfig.url,
+        user = dbConfig.user,
+        pass = dbConfig.password
+      )
   }
 }

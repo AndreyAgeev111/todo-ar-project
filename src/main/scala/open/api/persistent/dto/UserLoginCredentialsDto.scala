@@ -6,8 +6,7 @@ import open.api.models.requests.UserRegisterRequest
 import sttp.tapir.EndpointIO.annotations.endpointInput
 import sttp.tapir.Schema
 
-case class UserLoginCredentialsDto(login: String,
-                                   password: String)
+case class UserLoginCredentialsDto(login: String, password: String)
 
 object UserLoginCredentialsDto {
   def fromRegisterRequest(user: UserRegisterRequest): UserLoginCredentialsDto =

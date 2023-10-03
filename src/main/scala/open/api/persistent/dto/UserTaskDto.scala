@@ -7,26 +7,28 @@ import open.api.models.responses.UserTaskResponse
 import java.time.Instant
 import scala.math.random
 
-case class UserTaskDto(id: String,
-                       userLogin: String,
-                       name: String,
-                       description: Option[String],
-                       createdAt: Instant,
-                       deadline: Instant,
-                       status: TaskStatus)
+case class UserTaskDto(
+    id: String,
+    userLogin: String,
+    name: String,
+    description: Option[String],
+    createdAt: Instant,
+    deadline: Instant,
+    status: TaskStatus
+)
 
 object UserTaskDto {
   def apply(userTask: UserTaskCreateRequest, userLogin: String): UserTaskDto =
     UserTaskDto(
       id = generateId(userTask, userLogin),
-      userLogin = userLogin, 
-      name = userTask.name, 
-      description = userTask.description, 
+      userLogin = userLogin,
+      name = userTask.name,
+      description = userTask.description,
       createdAt = Instant.now(),
-      deadline = userTask.deadline, 
+      deadline = userTask.deadline,
       status = userTask.status
     )
-    
+
   def toTaskResponse(dto: UserTaskDto): UserTaskResponse =
     UserTaskResponse(
       id = dto.id,

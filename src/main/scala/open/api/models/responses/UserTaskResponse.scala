@@ -7,12 +7,14 @@ import sttp.tapir.Schema
 
 import java.time.Instant
 
-case class UserTaskResponse(id: String,
-                            name: String,
-                            description: Option[String],
-                            createdAt: Instant,
-                            deadline: Instant,
-                            status: TaskStatus)
+case class UserTaskResponse(
+    id: String,
+    name: String,
+    description: Option[String],
+    createdAt: Instant,
+    deadline: Instant,
+    status: TaskStatus
+)
 
 object UserTaskResponse {
   implicit val userTaskZioEncoder: Encoder[UserTaskResponse] = deriveEncoder[UserTaskResponse]

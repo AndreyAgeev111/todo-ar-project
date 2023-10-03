@@ -8,7 +8,6 @@ import doobie.postgres.implicits._
 import open.api.models.requests.UserTaskCreateRequest
 import open.api.persistent.dto.UserTaskDto
 
-
 trait UserTaskDao {
   def listUserTasks(userLogin: String): ConnectionIO[List[UserTaskDto]]
   def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): ConnectionIO[Int]

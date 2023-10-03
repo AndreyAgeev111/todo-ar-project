@@ -5,7 +5,6 @@ import doobie.postgres.implicits.pgEnum
 import io.circe.{Decoder, Encoder}
 import sttp.tapir.Schema
 
-
 object TaskStatuses extends Enumeration {
   type TaskStatus = Value
 

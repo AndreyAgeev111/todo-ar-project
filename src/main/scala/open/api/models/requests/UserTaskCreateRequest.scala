@@ -9,10 +9,7 @@ import sttp.tapir.Schema
 import java.time.Instant
 
 @endpointInput("/task")
-case class UserTaskCreateRequest(name: String,
-                                 description: Option[String],
-                                 deadline: Instant,
-                                 status: TaskStatus)
+case class UserTaskCreateRequest(name: String, description: Option[String], deadline: Instant, status: TaskStatus)
 
 object UserTaskCreateRequest {
   implicit val userTaskZioEncoder: Encoder[UserTaskCreateRequest] = deriveEncoder[UserTaskCreateRequest]

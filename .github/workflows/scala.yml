@@ -27,5 +27,7 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: 'sbt'
+    - name: Run build
+      run: sbt "scalafmtCheckAll; compile"
     - name: Run tests
       run: sbt test

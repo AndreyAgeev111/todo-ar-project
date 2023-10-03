@@ -11,5 +11,3 @@ object UserRegisterResponse {
   implicit val userDecoder: Decoder[UserRegisterResponse] = deriveDecoder[UserRegisterResponse]
   implicit val userSchema: Schema[UserRegisterResponse] = Schema.derived
 }
-
-

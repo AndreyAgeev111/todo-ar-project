@@ -11,4 +11,3 @@ object ErrorResponse {
   implicit val errorResponseDecoder: Decoder[ErrorResponse] = deriveDecoder[ErrorResponse]
   implicit val errorResponseSchema: Schema[ErrorResponse] = Schema.derived
 }
-
