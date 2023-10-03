@@ -37,7 +37,7 @@ class UsersServiceImpl(usersRepository: UsersRepositoryImpl) extends UsersServic
       .registerUser(user)
       .map(_ => Right(StatusCode.Ok -> UserRegisterResponse(user.login)))
       .recover {
-        case e: PSQLException if e.getMessage.contains(s"users_credentials_pkey") =>
+        case e: PSQLException if e.getMessage.contains("users_credentials_pkey") =>
           Left(StatusCode.BadRequest -> ErrorResponse(s"Invalid request - user with login = ${user.login} is already existed"))
       }
 }
