@@ -16,7 +16,7 @@ trait UserTaskService[F[_]] {
 class UserTaskServiceImpl(userTaskRepository: UserTaskRepository[IO]) extends UserTaskService[IO] {
   override def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskCreateResponse)]] =
     userTaskRepository.addUserTask(userTask, userLogin)
-      .map(taskAdded => Right(StatusCode.Ok -> UserTaskCreateResponse(taskAdded)))
+      .map(_ => Right(StatusCode.Ok -> UserTaskCreateResponse()))
       .recover {
         case e: PSQLException if e.getMessage.contains(s"(user_login)=($userLogin)")=> Left(StatusCode.BadRequest -> ErrorResponse(s"Invalid request - user with login = $userLogin is unknown"))
       }

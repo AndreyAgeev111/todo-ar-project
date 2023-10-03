@@ -11,13 +11,13 @@ import open.api.persistent.util.Connection.xa
 
 trait UserTaskRepository[F[_]] {
   def listUserTasks(userLogin: String): F[List[UserTaskResponse]]
-  def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): F[Int]
+  def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): F[Unit]
 }
 
 class UserTaskRepositoryImpl(userTaskDao: UserTaskDao) extends UserTaskRepository[IO] {
   override def listUserTasks(userLogin: String): IO[List[UserTaskResponse]] =
     userTaskDao.listUserTasks(userLogin).to[List].transact(xa).map(_.map(UserTaskDto.toTaskResponse))
 
-  override def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): IO[Int] =
-    userTaskDao.addUserTask(userTask, userLogin).run.transact(xa)
+  override def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): IO[Unit] =
+    userTaskDao.addUserTask(userTask, userLogin).run.transact(xa).as()
 }

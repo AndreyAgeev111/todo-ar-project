@@ -19,7 +19,7 @@ class UsersServiceImpl(usersRepository: UsersRepositoryImpl) extends UsersServic
       case Some(pass) => usersRepository.findUserPassword(userLogin).map {
         case Some(truePass) if truePass == pass => Right(StatusCode.Ok -> UserLoginCredentialsResponse(result = true, login = userLogin))
         case Some(_) => Left(StatusCode.BadRequest -> ErrorResponse("Invalid login credentials"))
-        case None => Left(StatusCode.BadRequest -> ErrorResponse("Password was not found"))
+        case None => Left(StatusCode.BadRequest -> ErrorResponse("Login was not found"))
       }
       case None => IO.pure(Left(StatusCode.BadRequest -> ErrorResponse("Invalid login credentials")))
     }
