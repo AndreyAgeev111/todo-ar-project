@@ -30,7 +30,13 @@ class UserTaskServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matche
     "throw error if problem with db connection" in {
       when(mockUserTaskRepository.listUserTasks(login)).thenReturn(IO.raiseError(new PSQLException("error", any)))
 
-      userTaskService.listUserTasks(login).asserting(_ shouldBe Left(StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = org.postgresql.util.PSQLException: error")))
+      userTaskService
+        .listUserTasks(login)
+        .asserting(
+          _ shouldBe Left(
+            StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = org.postgresql.util.PSQLException: error")
+          )
+        )
     }
   }
 
@@ -41,9 +47,12 @@ class UserTaskServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matche
       userTaskService.addUserTask(addTaskRequest, login).asserting(_ shouldBe Right(StatusCode.Ok -> UserTaskCreateResponse()))
     }
     "not create user, if it is existing" in {
-      when(mockUserTaskRepository.addUserTask(addTaskRequest, login)).thenReturn(IO.raiseError(new PSQLException(s"(user_login)=($login)", any)))
+      when(mockUserTaskRepository.addUserTask(addTaskRequest, login))
+        .thenReturn(IO.raiseError(new PSQLException(s"(user_login)=($login)", any)))
 
-      userTaskService.addUserTask(addTaskRequest, login).asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Invalid request - user with login = $login is unknown")))
+      userTaskService
+        .addUserTask(addTaskRequest, login)
+        .asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Invalid request - user with login = $login is unknown")))
     }
   }
 }

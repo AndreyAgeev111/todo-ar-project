@@ -8,8 +8,6 @@ import doobie.free.connection
 import open.api.errors.ErrorResponse
 import open.api.models.requests.UserRegisterRequest
 import open.api.models.responses.{UserLoginCredentialsResponse, UserRegisterResponse}
-import open.api.persistent.dto.{UserDto, UserLoginCredentialsDto}
-import open.api.persistent.repository.{UsersRepository, UsersRepositoryImpl}
 import open.api.testutils.mocks.DefaultMocks
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -29,7 +27,13 @@ class UsersServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers 
     "not create user, if it is existing" in {
       when(mockUsersRepository.registerUser(request)).thenReturn(IO.raiseError(new PSQLException("users_credentials_pkey", any)))
 
-      usersService.createUser(request).asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Invalid request - user with login = ${request.login} is already existed")))
+      usersService
+        .createUser(request)
+        .asserting(
+          _ shouldBe Left(
+            StatusCode.BadRequest -> ErrorResponse(s"Invalid request - user with login = ${request.login} is already existed")
+          )
+        )
     }
   }
 
