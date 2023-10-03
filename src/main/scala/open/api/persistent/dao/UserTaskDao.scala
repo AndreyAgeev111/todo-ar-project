@@ -10,15 +10,15 @@ import open.api.persistent.dto.UserTaskDto
 
 
 trait UserTaskDao {
-  def listUserTasks(userLogin: String): Query0[UserTaskDto]
-  def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): Update0
+  def listUserTasks(userLogin: String): ConnectionIO[List[UserTaskDto]]
+  def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): ConnectionIO[Int]
 }
 
 class UserTaskDaoImpl extends UserTaskDao {
-  override def listUserTasks(userLogin: String): Query0[UserTaskDto] =
-    sql"SELECT * FROM user_tasks WHERE user_login = $userLogin".query[UserTaskDto]
+  override def listUserTasks(userLogin: String): ConnectionIO[List[UserTaskDto]] =
+    sql"SELECT * FROM user_tasks WHERE user_login = $userLogin".query[UserTaskDto].to[List]
 
-  override def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): Update0 = {
-    sql"INSERT INTO user_tasks (id, user_login, name, description, created_at, deadline, status) VALUES (${Fragments.values(UserTaskDto(userTask, userLogin))})".update
+  override def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): ConnectionIO[Int] = {
+    sql"INSERT INTO user_tasks (id, user_login, name, description, created_at, deadline, status) VALUES (${Fragments.values(UserTaskDto(userTask, userLogin))})".update.run
   }
 }

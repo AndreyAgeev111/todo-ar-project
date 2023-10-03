@@ -15,7 +15,9 @@ object Dependencies {
     "ch.qos.logback" % "logback-classic" % logbackVersion
   )
   private val scalaTestDependencies: Seq[ModuleID] = Seq(
-    "org.scalatest" %% "scalatest" % scalaTestVersion % Test
+    "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
+    "org.scalatestplus" %% "mockito-4-11" % mockitoVersion % Test,
+    "org.typelevel" %% "cats-effect-testing-scalatest" % scalaTestEffectVersion % Test
   )
   private val circeDependencies: Seq[ModuleID] = Seq(
     "com.softwaremill.sttp.client3" %% "circe" % circeVersion % Test

@@ -4,6 +4,7 @@ import cats.effect.IO
 import open.api.errors.ErrorResponse
 import open.api.models.requests.UserTaskCreateRequest
 import open.api.models.responses.{UserTaskCreateResponse, UserTaskResponse}
+import open.api.persistent.dto.UserTaskDto
 import open.api.persistent.repository.UserTaskRepository
 import org.postgresql.util.PSQLException
 import sttp.model.StatusCode
@@ -22,7 +23,7 @@ class UserTaskServiceImpl(userTaskRepository: UserTaskRepository[IO]) extends Us
       }
 
   override def listUserTasks(userLogin: String): IO[Either[(StatusCode, ErrorResponse), (StatusCode, List[UserTaskResponse])]] =
-    userTaskRepository.listUserTasks(userLogin)
+    userTaskRepository.listUserTasks(userLogin).map(_.map(UserTaskDto.toTaskResponse))
       .map(tasks => Right(StatusCode.Ok -> tasks))
       .recover {
         case e: PSQLException => Left(StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = $e"))

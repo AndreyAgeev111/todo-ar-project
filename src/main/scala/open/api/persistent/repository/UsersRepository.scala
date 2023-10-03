@@ -14,9 +14,9 @@ trait UsersRepository[F[_]] {
 
 class UsersRepositoryImpl(usersDao: UsersDao) extends UsersRepository[IO] {
   override def registerUser(user: UserRegisterRequest): IO[Unit] = {
-    usersDao.addUser(UserLoginCredentialsDto.fromRegisterRequest(user), UserDto.fromRegisterRequest(user)).run.transact(xa).as()
+    usersDao.addUser(UserLoginCredentialsDto.fromRegisterRequest(user), UserDto.fromRegisterRequest(user)).transact(xa).as()
   }
 
   override def findUserPassword(userLogin: String): IO[Option[String]] =
-    usersDao.findUserPassword(userLogin).option.transact(xa)
+    usersDao.findUserPassword(userLogin).transact(xa)
 }
