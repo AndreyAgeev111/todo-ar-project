@@ -84,8 +84,8 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
     .out(statusCode)
     .out(jsonBody[UserTaskCreateResponse])
 
-  private val updateUserTaskServerEndpoint: ServerEndpoint[Any, F] = updateUserTask.serverLogic { case (_, userLogin) =>
-    { case (taskId, task) =>
+  private val updateUserTaskServerEndpoint: ServerEndpoint[Any, F] = updateUserTask.serverLogic {
+    case (_, userLogin) => { case (taskId, task) =>
       userTaskService.updateUserTask(task, taskId, userLogin.login)
     }
   }
@@ -106,8 +106,8 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
     .out(statusCode)
     .out(jsonBody[UserTaskResponse])
 
-  private val getUserTaskServerEndpoint: ServerEndpoint[Any, F] = getUserTask.serverLogic { _ =>
-    taskId => userTaskService.findUserTaskById(taskId)
+  private val getUserTaskServerEndpoint: ServerEndpoint[Any, F] = getUserTask.serverLogic { _ => taskId =>
+    userTaskService.findUserTaskById(taskId)
   }
 
   // TODO

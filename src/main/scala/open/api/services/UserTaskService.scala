@@ -63,7 +63,7 @@ class UserTaskServiceImpl(userTaskRepository: UserTaskRepository[IO]) extends Us
       .findUserTaskById(taskId)
       .map {
         case Some(task) => Right(StatusCode.Ok -> UserTaskDto.toTaskResponse(task))
-        case None => Left(StatusCode.BadRequest -> ErrorResponse(new NotFoundTaskError(taskId).message))
+        case None       => Left(StatusCode.BadRequest -> ErrorResponse(new NotFoundTaskError(taskId).message))
       }
       .recover { case e: PSQLException =>
         Left(StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = $e"))
