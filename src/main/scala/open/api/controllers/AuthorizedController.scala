@@ -9,7 +9,7 @@ import sttp.model.StatusCode
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.model.UsernamePassword
 import sttp.tapir.server.{PartialServerEndpoint, ServerEndpoint}
-import sttp.tapir.{auth, endpoint, query, statusCode}
+import sttp.tapir.{auth, endpoint, statusCode, path}
 
 class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersService: UsersService[F]) {
   private val securityEndpoint: PartialServerEndpoint[
@@ -57,7 +57,7 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
     Any,
     F
   ] = securityEndpoint.get
-    .description("Get one user task")
+    .description("Get user's tasks")
     .tag(TAG)
     .in("tasks")
     .out(statusCode)
@@ -67,13 +67,56 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
     _ => userTaskService.listUserTasks(user.login)
   }
 
+  private val updateUserTask: PartialServerEndpoint[
+    UsernamePassword,
+    (StatusCode, UserLoginCredentialsResponse),
+    (String, UserTaskCreateRequest),
+    (StatusCode, ErrorResponse),
+    (StatusCode, UserTaskCreateResponse),
+    Any,
+    F
+  ] = securityEndpoint.patch
+    .description("Update user's task by id")
+    .tag(TAG)
+    .in("tasks")
+    .in(path[String]("taskId"))
+    .in(jsonBody[UserTaskCreateRequest])
+    .out(statusCode)
+    .out(jsonBody[UserTaskCreateResponse])
+
+  private val updateUserTaskServerEndpoint: ServerEndpoint[Any, F] = updateUserTask.serverLogic { case (_, userLogin) =>
+    { case (taskId, task) =>
+      userTaskService.updateUserTask(task, taskId, userLogin.login)
+    }
+  }
+
+  private val getUserTask: PartialServerEndpoint[
+    UsernamePassword,
+    (StatusCode, UserLoginCredentialsResponse),
+    String,
+    (StatusCode, ErrorResponse),
+    (StatusCode, UserTaskResponse),
+    Any,
+    F
+  ] = securityEndpoint.get
+    .description("Get one user task by taskId")
+    .tag(TAG)
+    .in("tasks")
+    .in(path[String]("taskId"))
+    .out(statusCode)
+    .out(jsonBody[UserTaskResponse])
+
+  private val getUserTaskServerEndpoint: ServerEndpoint[Any, F] = getUserTask.serverLogic { _ =>
+    taskId => userTaskService.findUserTaskById(taskId)
+  }
+
   // TODO
-  // POST updateTask
   // DELETE deleteTask
   // POST updatePassword
   // POST updateStatus
   // POST filterTasks
-  def authorizedApiEndpoints: List[ServerEndpoint[Any, F]] = List(userTasksAddServerEndpoint, getUserTasksServerEndpoint)
+  def authorizedApiEndpoints: List[ServerEndpoint[Any, F]] =
+    List(userTasksAddServerEndpoint, getUserTasksServerEndpoint, updateUserTaskServerEndpoint, getUserTaskServerEndpoint)
 }
 
 object AuthorizedController {

@@ -10,6 +10,7 @@ import open.api.models.TaskStatuses
 import open.api.models.requests.UserTaskCreateRequest
 import open.api.models.responses.UserTaskCreateResponse
 import open.api.persistent.dto.UserTaskDto
+import open.api.persistent.errors.NotFoundTaskError
 import open.api.testutils.mocks.DefaultMocks
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -55,6 +56,40 @@ class UserTaskServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matche
         .asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Invalid request - user with login = $login is unknown")))
     }
   }
+
+  "findUserTask" - {
+    "find user task by id, if it is existing" in {
+      when(mockUserTaskRepository.findUserTaskById(taskId)).thenReturn(IO.pure(Some(listUserTasks.head)))
+
+      userTaskService
+        .findUserTaskById(taskId)
+        .asserting(_ shouldBe Right(StatusCode.Ok -> UserTaskDto.toTaskResponse(listUserTasks.head)))
+    }
+    "not found, if task isn't existing" in {
+      when(mockUserTaskRepository.findUserTaskById(taskId)).thenReturn(IO.pure(None))
+
+      userTaskService
+        .findUserTaskById(taskId)
+        .asserting(
+          _ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(new NotFoundTaskError(taskId).message))
+        )
+    }
+  }
+
+  "updateUserTask" - {
+    "update user's task, if it is existing" in {
+      when(mockUserTaskRepository.updateUserTask(addTaskRequest, taskId, login)).thenReturn(IO.unit)
+
+      userTaskService.updateUserTask(addTaskRequest, taskId, login).asserting(_ shouldBe Right(StatusCode.Ok -> UserTaskCreateResponse()))
+    }
+    "not update, if it isn't existing" in {
+      when(mockUserTaskRepository.updateUserTask(addTaskRequest, taskId, login)).thenReturn(IO.raiseError(new NotFoundTaskError(taskId)))
+
+      userTaskService
+        .updateUserTask(addTaskRequest, taskId, login)
+        .asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Not found task with taskId = $taskId")))
+    }
+  }
 }
 
 trait UserTaskServiceUtils extends DefaultMocks {
@@ -65,9 +100,10 @@ trait UserTaskServiceUtils extends DefaultMocks {
   val deadline: Instant = Instant.MAX
   val name: String = "name"
   val desc: Option[String] = Some("desc")
+  val taskId: String = "1"
   val listUserTasks: List[UserTaskDto] = List(
     UserTaskDto(
-      id = "1",
+      id = taskId,
       userLogin = login,
       name = name,
       description = desc,

@@ -5,6 +5,7 @@ import open.api.errors.ErrorResponse
 import open.api.models.requests.UserTaskCreateRequest
 import open.api.models.responses.{UserTaskCreateResponse, UserTaskResponse}
 import open.api.persistent.dto.UserTaskDto
+import open.api.persistent.errors.NotFoundTaskError
 import open.api.persistent.repository.UserTaskRepository
 import org.postgresql.util.PSQLException
 import sttp.model.StatusCode
@@ -15,6 +16,12 @@ trait UserTaskService[F[_]] {
       userLogin: String
   ): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskCreateResponse)]]
   def listUserTasks(userLogin: String): F[Either[(StatusCode, ErrorResponse), (StatusCode, List[UserTaskResponse])]]
+  def updateUserTask(
+      userTask: UserTaskCreateRequest,
+      taskId: String,
+      userLogin: String
+  ): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskCreateResponse)]]
+  def findUserTaskById(taskId: String): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskResponse)]]
 }
 
 class UserTaskServiceImpl(userTaskRepository: UserTaskRepository[IO]) extends UserTaskService[IO] {
@@ -39,4 +46,26 @@ class UserTaskServiceImpl(userTaskRepository: UserTaskRepository[IO]) extends Us
         Left(StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = $e"))
       }
 
+  override def updateUserTask(
+      userTask: UserTaskCreateRequest,
+      taskId: String,
+      userLogin: String
+  ): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskCreateResponse)]] =
+    userTaskRepository
+      .updateUserTask(userTask, taskId, userLogin)
+      .map(_ => Right(StatusCode.Ok -> UserTaskCreateResponse()))
+      .recover { case e: NotFoundTaskError =>
+        Left(StatusCode.BadRequest -> ErrorResponse(e.message))
+      }
+
+  override def findUserTaskById(taskId: String): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskResponse)]] =
+    userTaskRepository
+      .findUserTaskById(taskId)
+      .map {
+        case Some(task) => Right(StatusCode.Ok -> UserTaskDto.toTaskResponse(task))
+        case None => Left(StatusCode.BadRequest -> ErrorResponse(new NotFoundTaskError(taskId).message))
+      }
+      .recover { case e: PSQLException =>
+        Left(StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = $e"))
+      }
 }

@@ -4,7 +4,7 @@ import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import sttp.tapir.Schema
 
-case class UserTaskCreateResponse(message: String = "Task added successfully")
+case class UserTaskCreateResponse(message: String = "Task added or update successfully")
 
 object UserTaskCreateResponse {
   implicit val userTaskZioEncoder: Encoder[UserTaskCreateResponse] = deriveEncoder[UserTaskCreateResponse]
