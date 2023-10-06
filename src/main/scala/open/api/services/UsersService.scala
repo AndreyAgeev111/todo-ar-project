@@ -3,7 +3,7 @@ package open.api.services
 import cats.effect.IO
 import open.api.errors.ErrorResponse
 import open.api.models.requests.UserRegisterRequest
-import open.api.models.responses.{UserLoginCredentialsResponse, UserRegisterResponse}
+import open.api.models.responses.{SuccessResponse, UserLoginCredentialsResponse}
 import open.api.persistent.repository.UsersRepositoryImpl
 import org.postgresql.util.PSQLException
 import sttp.model.StatusCode
@@ -13,7 +13,7 @@ trait UsersService[F[_]] {
       userLogin: String,
       pass: Option[String]
   ): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserLoginCredentialsResponse)]]
-  def createUser(user: UserRegisterRequest): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserRegisterResponse)]]
+  def createUser(user: UserRegisterRequest): F[Either[(StatusCode, ErrorResponse), (StatusCode, SuccessResponse)]]
 }
 
 class UsersServiceImpl(usersRepository: UsersRepositoryImpl) extends UsersService[IO] {
@@ -24,7 +24,7 @@ class UsersServiceImpl(usersRepository: UsersRepositoryImpl) extends UsersServic
     password match {
       case Some(pass) =>
         usersRepository.findUserPassword(userLogin).map {
-          case Some(truePass) if truePass == pass => Right(StatusCode.Ok -> UserLoginCredentialsResponse(result = true, login = userLogin))
+          case Some(truePass) if truePass == pass => Right(StatusCode.Ok -> UserLoginCredentialsResponse(login = userLogin))
           case Some(_)                            => Left(StatusCode.BadRequest -> ErrorResponse("Invalid login credentials"))
           case None                               => Left(StatusCode.BadRequest -> ErrorResponse("Login was not found"))
         }
@@ -32,10 +32,10 @@ class UsersServiceImpl(usersRepository: UsersRepositoryImpl) extends UsersServic
     }
   }
 
-  override def createUser(user: UserRegisterRequest): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserRegisterResponse)]] =
+  override def createUser(user: UserRegisterRequest): IO[Either[(StatusCode, ErrorResponse), (StatusCode, SuccessResponse)]] =
     usersRepository
       .registerUser(user)
-      .map(_ => Right(StatusCode.Ok -> UserRegisterResponse(user.login)))
+      .map(_ => Right(StatusCode.Ok -> SuccessResponse(message = user.login)))
       .recover {
         case e: PSQLException if e.getMessage.contains("users_credentials_pkey") =>
           Left(StatusCode.BadRequest -> ErrorResponse(s"Invalid request - user with login = ${user.login} is already existed"))

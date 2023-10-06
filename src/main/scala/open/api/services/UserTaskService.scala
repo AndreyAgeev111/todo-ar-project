@@ -3,7 +3,7 @@ package open.api.services
 import cats.effect.IO
 import open.api.errors.ErrorResponse
 import open.api.models.requests.UserTaskCreateRequest
-import open.api.models.responses.{UserTaskCreateResponse, UserTaskResponse}
+import open.api.models.responses.{SuccessResponse, UserTaskResponse}
 import open.api.persistent.dto.UserTaskDto
 import open.api.persistent.errors.NotFoundTaskError
 import open.api.persistent.repository.UserTaskRepository
@@ -14,24 +14,25 @@ trait UserTaskService[F[_]] {
   def addUserTask(
       userTask: UserTaskCreateRequest,
       userLogin: String
-  ): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskCreateResponse)]]
+  ): F[Either[(StatusCode, ErrorResponse), (StatusCode, SuccessResponse)]]
   def listUserTasks(userLogin: String): F[Either[(StatusCode, ErrorResponse), (StatusCode, List[UserTaskResponse])]]
   def updateUserTask(
       userTask: UserTaskCreateRequest,
       taskId: String,
       userLogin: String
-  ): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskCreateResponse)]]
-  def findUserTaskById(taskId: String): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskResponse)]]
+  ): F[Either[(StatusCode, ErrorResponse), (StatusCode, SuccessResponse)]]
+  def findUserTask(userLogin: String, taskId: String): F[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskResponse)]]
+  def deleteUserTask(userLogin: String, taskId: String): F[Either[(StatusCode, ErrorResponse), (StatusCode, SuccessResponse)]]
 }
 
 class UserTaskServiceImpl(userTaskRepository: UserTaskRepository[IO]) extends UserTaskService[IO] {
   override def addUserTask(
       userTask: UserTaskCreateRequest,
       userLogin: String
-  ): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskCreateResponse)]] =
+  ): IO[Either[(StatusCode, ErrorResponse), (StatusCode, SuccessResponse)]] =
     userTaskRepository
       .addUserTask(userTask, userLogin)
-      .map(_ => Right(StatusCode.Ok -> UserTaskCreateResponse()))
+      .map(_ => Right(StatusCode.Ok -> SuccessResponse(message = "Task added or update successfully")))
       .recover {
         case e: PSQLException if e.getMessage.contains(s"(user_login)=($userLogin)") =>
           Left(StatusCode.BadRequest -> ErrorResponse(s"Invalid request - user with login = $userLogin is unknown"))
@@ -50,22 +51,30 @@ class UserTaskServiceImpl(userTaskRepository: UserTaskRepository[IO]) extends Us
       userTask: UserTaskCreateRequest,
       taskId: String,
       userLogin: String
-  ): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskCreateResponse)]] =
+  ): IO[Either[(StatusCode, ErrorResponse), (StatusCode, SuccessResponse)]] =
     userTaskRepository
       .updateUserTask(userTask, taskId, userLogin)
-      .map(_ => Right(StatusCode.Ok -> UserTaskCreateResponse()))
+      .map(_ => Right(StatusCode.Ok -> SuccessResponse(message = "Task added or update successfully")))
       .recover { case e: NotFoundTaskError =>
         Left(StatusCode.BadRequest -> ErrorResponse(e.message))
       }
 
-  override def findUserTaskById(taskId: String): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskResponse)]] =
+  override def findUserTask(userLogin: String, taskId: String): IO[Either[(StatusCode, ErrorResponse), (StatusCode, UserTaskResponse)]] =
     userTaskRepository
-      .findUserTaskById(taskId)
+      .findUserTaskById(userLogin, taskId)
       .map {
         case Some(task) => Right(StatusCode.Ok -> UserTaskDto.toTaskResponse(task))
         case None       => Left(StatusCode.BadRequest -> ErrorResponse(new NotFoundTaskError(taskId).message))
       }
       .recover { case e: PSQLException =>
         Left(StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = $e"))
+      }
+
+  override def deleteUserTask(userLogin: String, taskId: String): IO[Either[(StatusCode, ErrorResponse), (StatusCode, SuccessResponse)]] =
+    userTaskRepository
+      .deleteUserTask(userLogin, taskId)
+      .map(_ => Right(StatusCode.Ok -> SuccessResponse(message = s"Task with id = $taskId was successfully deleted")))
+      .recover { case _: NotFoundTaskError =>
+        Left(StatusCode.BadRequest -> ErrorResponse(new NotFoundTaskError(taskId).message))
       }
 }

@@ -8,7 +8,7 @@ import doobie.free.connection
 import open.api.errors.ErrorResponse
 import open.api.models.TaskStatuses
 import open.api.models.requests.UserTaskCreateRequest
-import open.api.models.responses.UserTaskCreateResponse
+import open.api.models.responses.SuccessResponse
 import open.api.persistent.dto.UserTaskDto
 import open.api.persistent.errors.NotFoundTaskError
 import open.api.testutils.mocks.DefaultMocks
@@ -45,7 +45,9 @@ class UserTaskServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matche
     "add user's task" in {
       when(mockUserTaskRepository.addUserTask(addTaskRequest, login)).thenReturn(IO.unit)
 
-      userTaskService.addUserTask(addTaskRequest, login).asserting(_ shouldBe Right(StatusCode.Ok -> UserTaskCreateResponse()))
+      userTaskService
+        .addUserTask(addTaskRequest, login)
+        .asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse("Task added or update successfully")))
     }
     "not create user, if it is existing" in {
       when(mockUserTaskRepository.addUserTask(addTaskRequest, login))
@@ -59,17 +61,17 @@ class UserTaskServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matche
 
   "findUserTask" - {
     "find user task by id, if it is existing" in {
-      when(mockUserTaskRepository.findUserTaskById(taskId)).thenReturn(IO.pure(Some(listUserTasks.head)))
+      when(mockUserTaskRepository.findUserTaskById(login, taskId)).thenReturn(IO.pure(Some(listUserTasks.head)))
 
       userTaskService
-        .findUserTaskById(taskId)
+        .findUserTask(login, taskId)
         .asserting(_ shouldBe Right(StatusCode.Ok -> UserTaskDto.toTaskResponse(listUserTasks.head)))
     }
     "not found, if task isn't existing" in {
-      when(mockUserTaskRepository.findUserTaskById(taskId)).thenReturn(IO.pure(None))
+      when(mockUserTaskRepository.findUserTaskById(login, taskId)).thenReturn(IO.pure(None))
 
       userTaskService
-        .findUserTaskById(taskId)
+        .findUserTask(login, taskId)
         .asserting(
           _ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(new NotFoundTaskError(taskId).message))
         )
@@ -80,13 +82,32 @@ class UserTaskServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matche
     "update user's task, if it is existing" in {
       when(mockUserTaskRepository.updateUserTask(addTaskRequest, taskId, login)).thenReturn(IO.unit)
 
-      userTaskService.updateUserTask(addTaskRequest, taskId, login).asserting(_ shouldBe Right(StatusCode.Ok -> UserTaskCreateResponse()))
+      userTaskService
+        .updateUserTask(addTaskRequest, taskId, login)
+        .asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse("Task added or update successfully")))
     }
     "not update, if it isn't existing" in {
       when(mockUserTaskRepository.updateUserTask(addTaskRequest, taskId, login)).thenReturn(IO.raiseError(new NotFoundTaskError(taskId)))
 
       userTaskService
         .updateUserTask(addTaskRequest, taskId, login)
+        .asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Not found task with taskId = $taskId")))
+    }
+  }
+
+  "deleteUserTask" - {
+    "delete user's task, if it is existing" in {
+      when(mockUserTaskRepository.deleteUserTask(login, taskId)).thenReturn(IO.unit)
+
+      userTaskService
+        .deleteUserTask(login, taskId)
+        .asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse(s"Task with id = $taskId was successfully deleted")))
+    }
+    "not delete, if it isn't existing" in {
+      when(mockUserTaskRepository.deleteUserTask(login, taskId)).thenReturn(IO.raiseError(new NotFoundTaskError(taskId)))
+
+      userTaskService
+        .deleteUserTask(login, taskId)
         .asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Not found task with taskId = $taskId")))
     }
   }

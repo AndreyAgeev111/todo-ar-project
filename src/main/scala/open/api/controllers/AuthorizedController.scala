@@ -3,13 +3,13 @@ package open.api.controllers
 import open.api.controllers.AuthorizedController.TAG
 import open.api.errors.ErrorResponse
 import open.api.models.requests.UserTaskCreateRequest
-import open.api.models.responses.{UserLoginCredentialsResponse, UserTaskCreateResponse, UserTaskResponse}
+import open.api.models.responses.{SuccessResponse, UserLoginCredentialsResponse, UserTaskResponse}
 import open.api.services.{UserTaskService, UsersService}
 import sttp.model.StatusCode
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.model.UsernamePassword
 import sttp.tapir.server.{PartialServerEndpoint, ServerEndpoint}
-import sttp.tapir.{auth, endpoint, statusCode, path}
+import sttp.tapir.{auth, endpoint, path, statusCode}
 
 class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersService: UsersService[F]) {
   private val securityEndpoint: PartialServerEndpoint[
@@ -33,7 +33,7 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
     (StatusCode, UserLoginCredentialsResponse),
     UserTaskCreateRequest,
     (StatusCode, ErrorResponse),
-    (StatusCode, UserTaskCreateResponse),
+    (StatusCode, SuccessResponse),
     Any,
     F
   ] = securityEndpoint.post
@@ -42,7 +42,7 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
     .in("tasks")
     .in(jsonBody[UserTaskCreateRequest])
     .out(statusCode)
-    .out(jsonBody[UserTaskCreateResponse])
+    .out(jsonBody[SuccessResponse])
 
   private val userTasksAddServerEndpoint: ServerEndpoint[Any, F] = userTasksAdd.serverLogic { case (_, user) =>
     task => userTaskService.addUserTask(task, user.login)
@@ -72,7 +72,7 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
     (StatusCode, UserLoginCredentialsResponse),
     (String, UserTaskCreateRequest),
     (StatusCode, ErrorResponse),
-    (StatusCode, UserTaskCreateResponse),
+    (StatusCode, SuccessResponse),
     Any,
     F
   ] = securityEndpoint.patch
@@ -82,7 +82,7 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
     .in(path[String]("taskId"))
     .in(jsonBody[UserTaskCreateRequest])
     .out(statusCode)
-    .out(jsonBody[UserTaskCreateResponse])
+    .out(jsonBody[SuccessResponse])
 
   private val updateUserTaskServerEndpoint: ServerEndpoint[Any, F] = updateUserTask.serverLogic {
     case (_, userLogin) => { case (taskId, task) =>
@@ -106,17 +106,42 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
     .out(statusCode)
     .out(jsonBody[UserTaskResponse])
 
-  private val getUserTaskServerEndpoint: ServerEndpoint[Any, F] = getUserTask.serverLogic { _ => taskId =>
-    userTaskService.findUserTaskById(taskId)
+  private val getUserTaskServerEndpoint: ServerEndpoint[Any, F] = getUserTask.serverLogic { case (_, userLogin) =>
+    taskId => userTaskService.findUserTask(userLogin.login, taskId)
+  }
+
+  private val deleteUserTask: PartialServerEndpoint[
+    UsernamePassword,
+    (StatusCode, UserLoginCredentialsResponse),
+    String,
+    (StatusCode, ErrorResponse),
+    (StatusCode, SuccessResponse),
+    Any,
+    F
+  ] = securityEndpoint.delete
+    .description("Delete one user task by taskId")
+    .tag(TAG)
+    .in("tasks")
+    .in(path[String]("taskId"))
+    .out(statusCode)
+    .out(jsonBody[SuccessResponse])
+
+  private val deleteUserTaskServerEndpoint: ServerEndpoint[Any, F] = deleteUserTask.serverLogic { case (_, userLogin) =>
+    taskId => userTaskService.deleteUserTask(userLogin.login, taskId)
   }
 
   // TODO
-  // DELETE deleteTask
   // POST updatePassword
   // POST updateStatus
   // POST filterTasks
   def authorizedApiEndpoints: List[ServerEndpoint[Any, F]] =
-    List(userTasksAddServerEndpoint, getUserTasksServerEndpoint, updateUserTaskServerEndpoint, getUserTaskServerEndpoint)
+    List(
+      userTasksAddServerEndpoint,
+      getUserTasksServerEndpoint,
+      updateUserTaskServerEndpoint,
+      getUserTaskServerEndpoint,
+      deleteUserTaskServerEndpoint
+    )
 }
 
 object AuthorizedController {

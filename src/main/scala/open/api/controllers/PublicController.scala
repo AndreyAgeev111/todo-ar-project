@@ -4,7 +4,7 @@ import cats.implicits.catsSyntaxOptionId
 import open.api.controllers.PublicController.TAG
 import open.api.errors.ErrorResponse
 import open.api.models.requests.{UserLoginCredentialsRequest, UserRegisterRequest}
-import open.api.models.responses.{UserLoginCredentialsResponse, UserRegisterResponse}
+import open.api.models.responses.{SuccessResponse, UserLoginCredentialsResponse}
 import open.api.services.UsersService
 import sttp.model.StatusCode
 import sttp.tapir.json.circe.jsonBody
@@ -28,7 +28,7 @@ class PublicController[F[_]](usersService: UsersService[F]) {
     usersService.checkUserPassword(userLoginCredentials.login, userLoginCredentials.password.some)
   )
 
-  private val userSignUp: Endpoint[Unit, UserRegisterRequest, (StatusCode, ErrorResponse), (StatusCode, UserRegisterResponse), Any] =
+  private val userSignUp: Endpoint[Unit, UserRegisterRequest, (StatusCode, ErrorResponse), (StatusCode, SuccessResponse), Any] =
     endpoint.post
       .description("Sign up with user's credentials and some optional data")
       .tag(TAG)
@@ -37,7 +37,7 @@ class PublicController[F[_]](usersService: UsersService[F]) {
       .errorOut(statusCode)
       .errorOut(jsonBody[ErrorResponse])
       .out(statusCode)
-      .out(jsonBody[UserRegisterResponse])
+      .out(jsonBody[SuccessResponse])
 
   private val userSignUpServerEndpoint: ServerEndpoint[Any, F] = userSignUp.serverLogic(user => usersService.createUser(user))
 

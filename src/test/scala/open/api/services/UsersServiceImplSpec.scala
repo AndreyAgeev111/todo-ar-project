@@ -7,7 +7,7 @@ import doobie.ConnectionIO
 import doobie.free.connection
 import open.api.errors.ErrorResponse
 import open.api.models.requests.UserRegisterRequest
-import open.api.models.responses.{UserLoginCredentialsResponse, UserRegisterResponse}
+import open.api.models.responses.{SuccessResponse, UserLoginCredentialsResponse}
 import open.api.testutils.mocks.DefaultMocks
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -22,7 +22,7 @@ class UsersServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers 
     "create user, if it isn't existing" in {
       when(mockUsersRepository.registerUser(request)).thenReturn(IO.unit)
 
-      usersService.createUser(request).asserting(_ shouldBe Right(StatusCode.Ok -> UserRegisterResponse(request.login)))
+      usersService.createUser(request).asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse(request.login)))
     }
     "not create user, if it is existing" in {
       when(mockUsersRepository.registerUser(request)).thenReturn(IO.raiseError(new PSQLException("users_credentials_pkey", any)))
@@ -43,7 +43,7 @@ class UsersServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers 
 
       usersService
         .checkUserPassword(login, Some(pass))
-        .asserting(_ shouldBe Right(StatusCode.Ok -> UserLoginCredentialsResponse(result = true, login = login)))
+        .asserting(_ shouldBe Right(StatusCode.Ok -> UserLoginCredentialsResponse(login = login)))
     }
     "return bad response, if it was found, but passes doesn't matches" in {
       when(mockUsersRepository.findUserPassword(login)).thenReturn(IO.pure(Some(newPass)))
