@@ -3,7 +3,7 @@ package open.api.controllers
 import open.api.controllers.AuthorizedController.TAG
 import open.api.errors.ErrorResponse
 import open.api.models.TaskStatuses.TaskStatus
-import open.api.models.requests.{UserLoginCredentialsRequest, UserTaskCreateRequest}
+import open.api.models.requests.{FilterRequest, UserLoginCredentialsRequest, UserTaskCreateRequest}
 import open.api.models.responses.{SuccessResponse, UserLoginCredentialsResponse, UserTaskResponse}
 import open.api.services.{UserTaskService, UsersService}
 import sttp.model.StatusCode
@@ -171,12 +171,30 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
 
   private val updateUserTaskStatusServerEndpoint: ServerEndpoint[Any, F] = updateUserTaskStatus.serverLogic {
     case (_, userLogin) => { case (taskId, status) =>
-      userTaskService.updateTaskStatus(userLogin.login, taskId, status)
+      userTaskService.updateUserTaskStatus(userLogin.login, taskId, status)
     }
   }
 
-  // TODO
-  // POST filterTasks
+  private val getUserTasksWithFilter: PartialServerEndpoint[
+    UsernamePassword,
+    (StatusCode, UserLoginCredentialsResponse),
+    FilterRequest,
+    (StatusCode, ErrorResponse),
+    (StatusCode, List[UserTaskResponse]),
+    Any,
+    F
+  ] = securityEndpoint.post
+    .description("Get user's tasks with filter")
+    .tag(TAG)
+    .in("tasks" / "filter")
+    .in(jsonBody[FilterRequest])
+    .out(statusCode)
+    .out(jsonBody[List[UserTaskResponse]])
+
+  private val getUserTasksWithFilterServerEndpoint: ServerEndpoint[Any, F] = getUserTasksWithFilter.serverLogic { case (_, user) =>
+    filter => userTaskService.listUserTasksWithFilter(user.login, filter)
+  }
+
   def authorizedApiEndpoints: List[ServerEndpoint[Any, F]] =
     List(
       userTasksAddServerEndpoint,
@@ -185,7 +203,8 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
       getUserTaskServerEndpoint,
       deleteUserTaskServerEndpoint,
       updateUserPasswordServerEndpoint,
-      updateUserTaskStatusServerEndpoint
+      updateUserTaskStatusServerEndpoint,
+      getUserTasksWithFilterServerEndpoint
     )
 }
 

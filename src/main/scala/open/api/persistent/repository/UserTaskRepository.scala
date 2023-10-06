@@ -4,7 +4,7 @@ import cats.effect.IO
 import open.api.persistent.dao.UserTaskDao
 import doobie.implicits._
 import open.api.models.TaskStatuses.TaskStatus
-import open.api.models.requests.UserTaskCreateRequest
+import open.api.models.requests.{FilterRequest, UserTaskCreateRequest}
 import open.api.persistent.dto.UserTaskDto
 import open.api.persistent.errors.NotFoundTaskError
 import open.api.persistent.util.Connection.xa
@@ -15,7 +15,8 @@ trait UserTaskRepository[F[_]] {
   def updateUserTask(userTask: UserTaskCreateRequest, taskId: String, userLogin: String): F[Unit]
   def findUserTaskById(userLogin: String, taskId: String): F[Option[UserTaskDto]]
   def deleteUserTask(userLogin: String, taskId: String): F[Unit]
-  def updateTaskStatus(userLogin: String, taskId: String, status: TaskStatus): F[Unit]
+  def updateUserTaskStatus(userLogin: String, taskId: String, status: TaskStatus): F[Unit]
+  def listUserTasksWithFilter(userLogin: String, filter: FilterRequest): F[List[UserTaskDto]]
 }
 
 class UserTaskRepositoryImpl(userTaskDao: UserTaskDao) extends UserTaskRepository[IO] {
@@ -43,9 +44,12 @@ class UserTaskRepositoryImpl(userTaskDao: UserTaskDao) extends UserTaskRepositor
       case _ => IO.unit
     }
 
-  override def updateTaskStatus(userLogin: String, taskId: String, status: TaskStatus): IO[Unit] =
-    userTaskDao.updateTaskStatus(userLogin, taskId, status).transact(xa).flatMap {
+  override def updateUserTaskStatus(userLogin: String, taskId: String, status: TaskStatus): IO[Unit] =
+    userTaskDao.updateUserTaskStatus(userLogin, taskId, status).transact(xa).flatMap {
       case 0 => IO.raiseError(new NotFoundTaskError(taskId))
       case _ => IO.unit
     }
+
+  override def listUserTasksWithFilter(userLogin: String, filter: FilterRequest): IO[List[UserTaskDto]] =
+    userTaskDao.listUserTasksWithFilter(userLogin, filter).transact(xa)
 }

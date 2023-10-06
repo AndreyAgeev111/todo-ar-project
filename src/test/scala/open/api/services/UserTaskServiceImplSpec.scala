@@ -7,7 +7,7 @@ import doobie.ConnectionIO
 import doobie.free.connection
 import open.api.errors.ErrorResponse
 import open.api.models.TaskStatuses
-import open.api.models.requests.UserTaskCreateRequest
+import open.api.models.requests.{FilterRequest, UserTaskCreateRequest}
 import open.api.models.responses.SuccessResponse
 import open.api.persistent.dto.UserTaskDto
 import open.api.persistent.errors.NotFoundTaskError
@@ -114,10 +114,10 @@ class UserTaskServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matche
 
   "updateUserTaskStatus" - {
     "update user's task status, if it is existing" in {
-      when(mockUserTaskRepository.updateTaskStatus(login, taskId, TaskStatuses.ToDo)).thenReturn(IO.unit)
+      when(mockUserTaskRepository.updateUserTaskStatus(login, taskId, TaskStatuses.ToDo)).thenReturn(IO.unit)
 
       userTaskService
-        .updateTaskStatus(login, taskId, TaskStatuses.ToDo)
+        .updateUserTaskStatus(login, taskId, TaskStatuses.ToDo)
         .asserting(
           _ shouldBe Right(
             StatusCode.Ok -> SuccessResponse(s"Task's status with id = $taskId was successfully updated with status = ${TaskStatuses.ToDo}")
@@ -125,13 +125,42 @@ class UserTaskServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matche
         )
     }
     "not update, if it isn't existing" in {
-      when(mockUserTaskRepository.updateTaskStatus(login, taskId, TaskStatuses.ToDo))
+      when(mockUserTaskRepository.updateUserTaskStatus(login, taskId, TaskStatuses.ToDo))
         .thenReturn(IO.raiseError(new NotFoundTaskError(taskId)))
 
       userTaskService
-        .updateTaskStatus(login, taskId, TaskStatuses.ToDo)
+        .updateUserTaskStatus(login, taskId, TaskStatuses.ToDo)
         .asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Not found task with taskId = $taskId")))
     }
+  }
+
+  "listUserTasksWithFilter" - {
+    "return all user's task by login with filter" in {
+      when(mockUserTaskRepository.listUserTasksWithFilter(login, filterRequest)).thenReturn(IO.pure(listUserTasks))
+
+      userTaskService
+        .listUserTasksWithFilter(login, filterRequest)
+        .asserting(_ shouldBe Right(StatusCode.Ok -> listUserTasks.map(UserTaskDto.toTaskResponse)))
+    }
+    "throw error if problem with db connection" in {
+      when(mockUserTaskRepository.listUserTasksWithFilter(login, filterRequest))
+        .thenReturn(IO.raiseError(new PSQLException("error", any, any)))
+
+      userTaskService
+        .listUserTasksWithFilter(login, filterRequest)
+        .asserting(
+          _ shouldBe Left(
+            StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = org.postgresql.util.PSQLException: error")
+          )
+        )
+    }
+  }
+  "throw bad request, if request is invalidated" in {
+    userTaskService
+      .listUserTasksWithFilter(login, badFilterRequest)
+      .asserting(
+        _ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Bad request, createdAfter > createdBefore"))
+      )
   }
 }
 
@@ -165,4 +194,22 @@ trait UserTaskServiceUtils extends DefaultMocks {
     listUserTasks
   )
   val addTaskRequestDao: ConnectionIO[Int] = connection.pure(1)
+  val filterRequest: FilterRequest = FilterRequest(
+    name = None,
+    description = None,
+    createdAfter = None,
+    createdBefore = None,
+    deadlineAfter = None,
+    deadlineBefore = None,
+    statuses = List(TaskStatuses.ToDo)
+  )
+  val badFilterRequest: FilterRequest = FilterRequest(
+    name = None,
+    description = None,
+    createdAfter = Some(Instant.MAX),
+    createdBefore = Some(Instant.now()),
+    deadlineAfter = None,
+    deadlineBefore = None,
+    statuses = List(TaskStatuses.ToDo)
+  )
 }
