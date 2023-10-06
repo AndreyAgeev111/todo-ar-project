@@ -2,7 +2,7 @@ package open.api.controllers
 
 import open.api.controllers.AuthorizedController.TAG
 import open.api.errors.ErrorResponse
-import open.api.models.requests.UserTaskCreateRequest
+import open.api.models.requests.{UserLoginCredentialsRequest, UserTaskCreateRequest}
 import open.api.models.responses.{SuccessResponse, UserLoginCredentialsResponse, UserTaskResponse}
 import open.api.services.{UserTaskService, UsersService}
 import sttp.model.StatusCode
@@ -130,8 +130,26 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
     taskId => userTaskService.deleteUserTask(userLogin.login, taskId)
   }
 
+  private val updateUserPassword: PartialServerEndpoint[
+    UsernamePassword,
+    (StatusCode, UserLoginCredentialsResponse),
+    UserLoginCredentialsRequest,
+    (StatusCode, ErrorResponse),
+    (StatusCode, SuccessResponse),
+    Any,
+    F
+  ] = securityEndpoint.post
+    .description("Update user's password")
+    .tag(TAG)
+    .in("tasks")
+    .in(jsonBody[UserLoginCredentialsRequest])
+    .out(statusCode)
+    .out(jsonBody[SuccessResponse])
+
+  private val updateUserPasswordServerEndpoint: ServerEndpoint[Any, F] = updateUserPassword.serverLogic { _ => userCredentials =>
+    usersService.updateUserPassword(userCredentials)
+  }
   // TODO
-  // POST updatePassword
   // POST updateStatus
   // POST filterTasks
   def authorizedApiEndpoints: List[ServerEndpoint[Any, F]] =
@@ -140,7 +158,8 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
       getUserTasksServerEndpoint,
       updateUserTaskServerEndpoint,
       getUserTaskServerEndpoint,
-      deleteUserTaskServerEndpoint
+      deleteUserTaskServerEndpoint,
+      updateUserPasswordServerEndpoint
     )
 }
 

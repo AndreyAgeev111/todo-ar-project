@@ -6,7 +6,7 @@ import com.softwaremill.macwire.wire
 import doobie.ConnectionIO
 import doobie.free.connection
 import open.api.errors.ErrorResponse
-import open.api.models.requests.UserRegisterRequest
+import open.api.models.requests.{UserLoginCredentialsRequest, UserRegisterRequest}
 import open.api.models.responses.{SuccessResponse, UserLoginCredentialsResponse}
 import open.api.testutils.mocks.DefaultMocks
 import org.mockito.ArgumentMatchers.any
@@ -22,7 +22,7 @@ class UsersServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers 
     "create user, if it isn't existing" in {
       when(mockUsersRepository.registerUser(request)).thenReturn(IO.unit)
 
-      usersService.createUser(request).asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse(request.login)))
+      usersService.createUser(request).asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse(s"Account with login = $login was successfully created")))
     }
     "not create user, if it is existing" in {
       when(mockUsersRepository.registerUser(request)).thenReturn(IO.raiseError(new PSQLException("users_credentials_pkey", any)))
@@ -60,6 +60,19 @@ class UsersServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers 
         .asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse("Login was not found")))
     }
   }
+
+  "updateUserPassword" - {
+    "update user's password" in {
+      when(mockUsersRepository.updateUserPassword(credentialsRequest)).thenReturn(IO.unit)
+
+      usersService.updateUserPassword(credentialsRequest).asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse(s"Password with login = $login was successfully updated")))
+    }
+    "not update, if db isn't responding" in {
+      when(mockUsersRepository.updateUserPassword(credentialsRequest)).thenReturn(IO.raiseError(new PSQLException("message", any())))
+
+      usersService.updateUserPassword(credentialsRequest).asserting(_ shouldBe Left(StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = org.postgresql.util.PSQLException: message")))
+    }
+  }
 }
 
 trait UsersServiceUtils extends DefaultMocks {
@@ -74,6 +87,10 @@ trait UsersServiceUtils extends DefaultMocks {
     firstName = None,
     secondName = None,
     email = None
+  )
+  val credentialsRequest: UserLoginCredentialsRequest = UserLoginCredentialsRequest(
+    login = login,
+    password = newPass
   )
   val userRegisterDao: ConnectionIO[Int] = connection.pure(1)
   val findPasswordDao: ConnectionIO[Option[String]] = connection.pure(Some(pass))
