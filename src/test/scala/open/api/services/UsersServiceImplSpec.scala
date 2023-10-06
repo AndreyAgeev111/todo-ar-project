@@ -22,7 +22,9 @@ class UsersServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers 
     "create user, if it isn't existing" in {
       when(mockUsersRepository.registerUser(request)).thenReturn(IO.unit)
 
-      usersService.createUser(request).asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse(s"Account with login = $login was successfully created")))
+      usersService
+        .createUser(request)
+        .asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse(s"Account with login = $login was successfully created")))
     }
     "not create user, if it is existing" in {
       when(mockUsersRepository.registerUser(request)).thenReturn(IO.raiseError(new PSQLException("users_credentials_pkey", any)))
@@ -65,12 +67,20 @@ class UsersServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers 
     "update user's password" in {
       when(mockUsersRepository.updateUserPassword(credentialsRequest)).thenReturn(IO.unit)
 
-      usersService.updateUserPassword(credentialsRequest).asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse(s"Password with login = $login was successfully updated")))
+      usersService
+        .updateUserPassword(credentialsRequest)
+        .asserting(_ shouldBe Right(StatusCode.Ok -> SuccessResponse(s"Password with login = $login was successfully updated")))
     }
     "not update, if db isn't responding" in {
       when(mockUsersRepository.updateUserPassword(credentialsRequest)).thenReturn(IO.raiseError(new PSQLException("message", any())))
 
-      usersService.updateUserPassword(credentialsRequest).asserting(_ shouldBe Left(StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = org.postgresql.util.PSQLException: message")))
+      usersService
+        .updateUserPassword(credentialsRequest)
+        .asserting(
+          _ shouldBe Left(
+            StatusCode.BadGateway -> ErrorResponse(s"Internal server error with error = org.postgresql.util.PSQLException: message")
+          )
+        )
     }
   }
 }
