@@ -6,6 +6,7 @@ import open.api.models.requests.{UserLoginCredentialsRequest, UserTaskCreateRequ
 import open.api.models.responses.{SuccessResponse, UserLoginCredentialsResponse, UserTaskResponse}
 import open.api.services.{UserTaskService, UsersService}
 import sttp.model.StatusCode
+import sttp.tapir._
 import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.model.UsernamePassword
 import sttp.tapir.server.{PartialServerEndpoint, ServerEndpoint}
@@ -141,7 +142,7 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
   ] = securityEndpoint.post
     .description("Update user's password")
     .tag(TAG)
-    .in("tasks")
+    .in("login" / "password")
     .in(jsonBody[UserLoginCredentialsRequest])
     .out(statusCode)
     .out(jsonBody[SuccessResponse])
