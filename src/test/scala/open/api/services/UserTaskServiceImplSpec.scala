@@ -111,6 +111,28 @@ class UserTaskServiceImplSpec extends AsyncFreeSpec with AsyncIOSpec with Matche
         .asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Not found task with taskId = $taskId")))
     }
   }
+
+  "updateUserTaskStatus" - {
+    "update user's task status, if it is existing" in {
+      when(mockUserTaskRepository.updateTaskStatus(login, taskId, TaskStatuses.ToDo)).thenReturn(IO.unit)
+
+      userTaskService
+        .updateTaskStatus(login, taskId, TaskStatuses.ToDo)
+        .asserting(
+          _ shouldBe Right(
+            StatusCode.Ok -> SuccessResponse(s"Task's status with id = $taskId was successfully updated with status = ${TaskStatuses.ToDo}")
+          )
+        )
+    }
+    "not update, if it isn't existing" in {
+      when(mockUserTaskRepository.updateTaskStatus(login, taskId, TaskStatuses.ToDo))
+        .thenReturn(IO.raiseError(new NotFoundTaskError(taskId)))
+
+      userTaskService
+        .updateTaskStatus(login, taskId, TaskStatuses.ToDo)
+        .asserting(_ shouldBe Left(StatusCode.BadRequest -> ErrorResponse(s"Not found task with taskId = $taskId")))
+    }
+  }
 }
 
 trait UserTaskServiceUtils extends DefaultMocks {

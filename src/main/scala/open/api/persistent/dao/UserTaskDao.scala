@@ -5,6 +5,7 @@ import doobie.implicits._
 import doobie.postgres._
 import doobie.implicits._
 import doobie.postgres.implicits._
+import open.api.models.TaskStatuses.TaskStatus
 import open.api.models.requests.UserTaskCreateRequest
 import open.api.persistent.dto.UserTaskDto
 
@@ -14,6 +15,7 @@ trait UserTaskDao {
   def findTaskById(userLogin: String, taskId: String): ConnectionIO[Option[UserTaskDto]]
   def updateTask(userTask: UserTaskDto, taskId: String): ConnectionIO[Int]
   def deleteTask(userLogin: String, taskId: String): ConnectionIO[Int]
+  def updateTaskStatus(userLogin: String, taskId: String, status: TaskStatus): ConnectionIO[Int]
 }
 
 class UserTaskDaoImpl extends UserTaskDao {
@@ -31,4 +33,7 @@ class UserTaskDaoImpl extends UserTaskDao {
 
   override def deleteTask(userLogin: String, taskId: String): ConnectionIO[Int] =
     sql"DELETE FROM user_tasks WHERE id = $taskId AND user_login = $userLogin".update.run
+
+  override def updateTaskStatus(userLogin: String, taskId: String, status: TaskStatus): ConnectionIO[Int] =
+    sql"UPDATE user_tasks SET status = $status WHERE id = $taskId AND user_login = $userLogin".update.run
 }

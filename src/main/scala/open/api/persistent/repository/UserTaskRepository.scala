@@ -3,6 +3,7 @@ package open.api.persistent.repository
 import cats.effect.IO
 import open.api.persistent.dao.UserTaskDao
 import doobie.implicits._
+import open.api.models.TaskStatuses.TaskStatus
 import open.api.models.requests.UserTaskCreateRequest
 import open.api.persistent.dto.UserTaskDto
 import open.api.persistent.errors.NotFoundTaskError
@@ -14,6 +15,7 @@ trait UserTaskRepository[F[_]] {
   def updateUserTask(userTask: UserTaskCreateRequest, taskId: String, userLogin: String): F[Unit]
   def findUserTaskById(userLogin: String, taskId: String): F[Option[UserTaskDto]]
   def deleteUserTask(userLogin: String, taskId: String): F[Unit]
+  def updateTaskStatus(userLogin: String, taskId: String, status: TaskStatus): F[Unit]
 }
 
 class UserTaskRepositoryImpl(userTaskDao: UserTaskDao) extends UserTaskRepository[IO] {
@@ -37,6 +39,12 @@ class UserTaskRepositoryImpl(userTaskDao: UserTaskDao) extends UserTaskRepositor
 
   override def deleteUserTask(userLogin: String, taskId: String): IO[Unit] =
     userTaskDao.deleteTask(userLogin, taskId).transact(xa).flatMap {
+      case 0 => IO.raiseError(new NotFoundTaskError(taskId))
+      case _ => IO.unit
+    }
+
+  override def updateTaskStatus(userLogin: String, taskId: String, status: TaskStatus): IO[Unit] =
+    userTaskDao.updateTaskStatus(userLogin, taskId, status).transact(xa).flatMap {
       case 0 => IO.raiseError(new NotFoundTaskError(taskId))
       case _ => IO.unit
     }

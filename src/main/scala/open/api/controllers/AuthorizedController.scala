@@ -2,6 +2,7 @@ package open.api.controllers
 
 import open.api.controllers.AuthorizedController.TAG
 import open.api.errors.ErrorResponse
+import open.api.models.TaskStatuses.TaskStatus
 import open.api.models.requests.{UserLoginCredentialsRequest, UserTaskCreateRequest}
 import open.api.models.responses.{SuccessResponse, UserLoginCredentialsResponse, UserTaskResponse}
 import open.api.services.{UserTaskService, UsersService}
@@ -150,8 +151,31 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
   private val updateUserPasswordServerEndpoint: ServerEndpoint[Any, F] = updateUserPassword.serverLogic { _ => userCredentials =>
     usersService.updateUserPassword(userCredentials)
   }
+
+  private val updateUserTaskStatus: PartialServerEndpoint[
+    UsernamePassword,
+    (StatusCode, UserLoginCredentialsResponse),
+    (String, TaskStatus),
+    (StatusCode, ErrorResponse),
+    (StatusCode, SuccessResponse),
+    Any,
+    F
+  ] = securityEndpoint.post
+    .description("Update user's task status")
+    .tag(TAG)
+    .in("tasks" / "status")
+    .in(query[String]("taskId"))
+    .in(query[TaskStatus]("status"))
+    .out(statusCode)
+    .out(jsonBody[SuccessResponse])
+
+  private val updateUserTaskStatusServerEndpoint: ServerEndpoint[Any, F] = updateUserTaskStatus.serverLogic {
+    case (_, userLogin) => { case (taskId, status) =>
+      userTaskService.updateTaskStatus(userLogin.login, taskId, status)
+    }
+  }
+
   // TODO
-  // POST updateStatus
   // POST filterTasks
   def authorizedApiEndpoints: List[ServerEndpoint[Any, F]] =
     List(
@@ -160,7 +184,8 @@ class AuthorizedController[F[_]](userTaskService: UserTaskService[F], usersServi
       updateUserTaskServerEndpoint,
       getUserTaskServerEndpoint,
       deleteUserTaskServerEndpoint,
-      updateUserPasswordServerEndpoint
+      updateUserPasswordServerEndpoint,
+      updateUserTaskStatusServerEndpoint
     )
 }
 
