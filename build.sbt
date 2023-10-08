@@ -9,8 +9,8 @@ lazy val rootProject = (project in file("."))
       version := "1.0.0",
       organization := "open.api",
       scalaVersion := "2.13.10",
-      dockerBaseImage := "openjdk:11.0.7",
-      dockerExposedPorts := Seq(8080),
+      dockerBaseImage := "openjdk:18.0.2",
+      dockerExposedPorts ++= Seq(8080),
       libraryDependencies ++= allProjectDependencies
     )
   )

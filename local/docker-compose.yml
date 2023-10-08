@@ -2,7 +2,8 @@ version: '3.8'
 
 services:
   app:
-    image: andreyageev111/todo-ar-project:1.0.0
+    build: ../target/docker/stage/
+    image: todo-ar-project:1.0.0
     depends_on:
       - db
     ports:

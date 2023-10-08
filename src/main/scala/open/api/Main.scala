@@ -21,7 +21,7 @@ object Main extends IOApp {
 
     EmberServerBuilder
       .default[IO]
-      .withHost(Host.fromString("localhost").get)
+      .withHost(Host.fromString("0.0.0.0").get)
       .withPort(port)
       .withHttpApp(Router("/" -> routes).orNotFound)
       .build
