@@ -1,7 +1,7 @@
 # TO DO LIST API 
 Pet project with Tapir, Doobie, Http4s on Scala
 
-## For local deploy: 
+## For local deploy
 
 Build:
 ```bash
@@ -22,3 +22,7 @@ Run:
 ```bash
 docker-compose up 
 ```
+## After deploy
+
+| Swagger | http://localhost:8080/docs |
+|---------|----------------------------|
