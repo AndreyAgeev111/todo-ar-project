@@ -24,14 +24,14 @@ class UserTaskRepositoryImpl(userTaskDao: UserTaskDao) extends UserTaskRepositor
     userTaskDao.listUserTasks(userLogin).transact(xa)
 
   override def addUserTask(userTask: UserTaskCreateRequest, userLogin: String): IO[Unit] =
-    userTaskDao.addUserTask(userTask, userLogin).transact(xa).as()
+    userTaskDao.addUserTask(userTask, userLogin).transact(xa).void
 
   override def updateUserTask(userTask: UserTaskCreateRequest, taskId: String, userLogin: String): IO[Unit] =
     userTaskDao
       .findTaskById(userLogin, taskId)
       .transact(xa)
       .flatMap {
-        case Some(_) => userTaskDao.updateTask(UserTaskDto(userTask, userLogin), taskId).transact(xa).as()
+        case Some(_) => userTaskDao.updateTask(UserTaskDto(userTask, userLogin), taskId).transact(xa).void
         case None    => IO.raiseError(new NotFoundTaskError(taskId))
       }
 

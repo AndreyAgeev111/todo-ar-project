@@ -15,12 +15,12 @@ trait UsersRepository[F[_]] {
 
 class UsersRepositoryImpl(usersDao: UsersDao) extends UsersRepository[IO] {
   override def registerUser(user: UserRegisterRequest): IO[Unit] = {
-    usersDao.addUser(UserLoginCredentialsDto.fromRegisterRequest(user), UserDto.fromRegisterRequest(user)).transact(xa).as()
+    usersDao.addUser(UserLoginCredentialsDto.fromRegisterRequest(user), UserDto.fromRegisterRequest(user)).transact(xa).void
   }
 
   override def findUserPassword(userLogin: String): IO[Option[String]] =
     usersDao.findUserPassword(userLogin).transact(xa)
 
   override def updateUserPassword(userCredentials: UserLoginCredentialsRequest): IO[Unit] =
-    usersDao.updateUserPassword(userCredentials).transact(xa).as()
+    usersDao.updateUserPassword(userCredentials).transact(xa).void
 }
