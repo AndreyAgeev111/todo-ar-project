@@ -11,7 +11,7 @@ object Main extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] = {
 
-    val routes = Http4sServerInterpreter[IO]().toRoutes(Dependencies.controllersModule.all)
+    val routes = Http4sServerInterpreter[IO](Dependencies.controllersModule.customOptions).toRoutes(Dependencies.controllersModule.all)
 
     val port = sys.env
       .get("HTTP_PORT")

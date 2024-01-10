@@ -3,6 +3,7 @@ package open.api.wirings
 import cats.effect.IO
 import open.api.controllers.{AuthorizedController, PublicController}
 import sttp.tapir.server.ServerEndpoint
+import sttp.tapir.server.http4s.Http4sServerOptions
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
 class ControllersModule(authorizedController: AuthorizedController[IO], publicController: PublicController[IO]) {
@@ -12,4 +13,5 @@ class ControllersModule(authorizedController: AuthorizedController[IO], publicCo
     .fromServerEndpoints[IO](apiEndpoints, "todo-ar-project", "1.0.0")
 
   val all: List[ServerEndpoint[Any, IO]] = apiEndpoints ++ docEndpoints
+  val customOptions: Http4sServerOptions[IO] = Http4sServerOptions.customiseInterceptors[IO].options
 }

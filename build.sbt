@@ -6,7 +6,7 @@ lazy val rootProject = (project in file("."))
   .settings(
     Seq(
       name := "todo-ar-project",
-      version := "1.0.0",
+      version := "1.1.0",
       organization := "open.api",
       scalaVersion := "2.13.10",
       dockerBaseImage := "openjdk:18.0.2",
